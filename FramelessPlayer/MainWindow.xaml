@@ -8,6 +8,7 @@
                       
                       SaveWindowPosition="True"
                       ResizeMode="CanResize"
+                      Topmost="True"
                       
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       
@@ -75,41 +76,64 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
-            <ColumnDefinition Width="48"/>
         </Grid.ColumnDefinitions>
 
         <!-- Main player -->
         <MediaElement Name="MainPlayer"
                       ScrubbingEnabled="True"
                       Stretch="UniformToFill"
-                      Grid.RowSpan="2" Grid.ColumnSpan="2"></MediaElement>
+                      Grid.RowSpan="2" Grid.ColumnSpan="2"
+                      LoadedBehavior="Manual"
+                      UnloadedBehavior="Manual"
+                      MediaEnded="MainPlayer_MediaEnded"
+                      MediaOpened="MainPlayer_MediaOpened"></MediaElement>
         
         <!-- Media control buttons -->
         <Grid Name="MediaControlGrid"
-              Grid.Row="1" Grid.Column="1"
+              Grid.Row="1"
               MouseEnter="MediaControlGrid_MouseEnter"
               MouseLeave="MediaControlGrid_MouseLeave"
               Opacity="0.1">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="10"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="38"/>
+                <ColumnDefinition Width="38"/>
+                <ColumnDefinition Width="38"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <!--Buttons-->
             <Button Name="Play_Btn"
+                    Click="Play_Btn_Click"
                     Style="{DynamicResource MetroCircleButtonStyle}"
-                    Background="#FF838383">
-                <iconPacks:PackIconMaterial Kind="Play" />
-            </Button>
-            <Button Name="Pause_Btn"
-                    Style="{DynamicResource MetroCircleButtonStyle}"
-                    Background="#FF838383">
-                <iconPacks:PackIconMaterial Kind="Pause" />
+                    Background="#FF838383"
+                    Grid.Column="1">
+                <iconPacks:PackIconMaterial Name="PlayButton_Ico" Kind="Play" />
             </Button>
             <Button Name="Stop_Btn"
+                    Click="Stop_Btn_Click"
                     Style="{DynamicResource MetroCircleButtonStyle}"
-                    Background="#FF838383">
+                    Background="#FF838383"
+                    Grid.Column="2">
                 <iconPacks:PackIconMaterial Kind="Stop" />
             </Button>
-            <Button Name="ShowControls_Btn"
+            <Button Name="Options_Btn"
+                    Click="Options_Btn_Click"
                     Style="{DynamicResource MetroCircleButtonStyle}"
-                    Background="#FF838383">
-                <iconPacks:PackIconMaterial Kind="PlusCircleMultipleOutline" />
+                    Background="#FF838383"
+                    Grid.Column="3">
+                <iconPacks:PackIconMaterial Kind="DotsHorizontal" />
             </Button>
+            
+            <!--Progressbar-->
+            <ScrollBar Name="VideoProgress_Slider"
+                       Grid.Row="1" Grid.ColumnSpan="5"
+                       ScrollBar.Scroll="VideoProgress_Slider_Scroll"/>
+
         </Grid>
         
         <!-- File select screen --> 

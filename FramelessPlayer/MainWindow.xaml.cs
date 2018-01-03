@@ -24,6 +24,10 @@ namespace FramelessPlayer
     {
         private bool settingsToggle = false;
         private bool darkmodeIconToggle = false;
+
+        private bool isPlaying = false;
+        private bool isEnded = false;
+
         private string filePath = "";
 
         public MainWindow()
@@ -149,6 +153,9 @@ namespace FramelessPlayer
             MainPlayer.Source = new Uri(filePath);
 
             SelectFile_Btn.Visibility = Visibility.Collapsed;
+
+            // Move video to beginning
+            MainPlayer.Stop();
         }
 
         // Handle media controls
@@ -160,6 +167,60 @@ namespace FramelessPlayer
         private void MediaControlGrid_MouseLeave(object sender, MouseEventArgs e)
         {
             MediaControlGrid.Opacity = 0.1;
+        }
+
+        // Handle progress bar
+        private void VideoProgress_Slider_Scroll(object sender, System.Windows.Controls.Primitives.ScrollEventArgs e)
+        {
+            MainPlayer.Position = TimeSpan.FromSeconds(VideoProgress_Slider.Value);
+        }
+
+        // Handle media buttons
+        private void Play_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            if (isEnded)
+            {
+                MainPlayer.Position = TimeSpan.FromSeconds(0);
+                MainPlayer.Play();
+                isPlaying = true;
+                PlayButton_Ico.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
+            }
+            else if (isPlaying)
+            {
+                MainPlayer.Pause();
+                isPlaying = false;
+                PlayButton_Ico.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
+            }
+            else
+            {
+                MainPlayer.Play();
+                isPlaying = true;
+                PlayButton_Ico.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
+            }
+        }
+
+        private void Stop_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            MainPlayer.Stop();
+            isPlaying = false;
+            PlayButton_Ico.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
+        }
+
+        private void Options_Btn_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        // Handle player events
+        private void MainPlayer_MediaEnded(object sender, RoutedEventArgs e)
+        {
+            isPlaying = false;
+            PlayButton_Ico.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
+        }
+
+        private void MainPlayer_MediaOpened(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }
