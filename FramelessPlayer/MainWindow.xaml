@@ -2,10 +2,127 @@
                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                       xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
+                      xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                      
                       Title="MainWindow"
-                      Height="350"
-                      Width="525">
+                      
+                      SaveWindowPosition="True"
+                      ResizeMode="CanResize"
+                      
+                      GlowBrush="{DynamicResource AccentColorBrush}"
+                      
+                      Height="720" Width="1280"
+                      MinHeight="480" MinWidth="854">
+
+    <Controls:MetroWindow.LeftWindowCommands>
+        <Controls:WindowCommands>
+            <Button Name="Settings_Btn"
+                    Click="Settings_Btn_Click"
+                    MouseEnter="Settings_Btn_MouseEnter"
+                    MouseLeave="Settings_Btn_MouseLeave"
+                    ToolTip="Access the app settings">
+                <iconPacks:PackIconMaterial Name="Settings_Ico" Kind="Settings"/>
+            </Button>
+        </Controls:WindowCommands>
+    </Controls:MetroWindow.LeftWindowCommands>
+
+    <Controls:MetroWindow.Flyouts>
+        <Controls:FlyoutsControl>
+            
+            <!-- Settings menu flyout -->
+            <Controls:Flyout Name="Settings_Flyout"
+                             Header="Settings"
+                             Theme="Adapt"
+                             Position="Left"
+                             Width="400"
+                             CloseButtonVisibility="Collapsed"
+                             BorderBrush="#E5838383" BorderThickness="0,0,1,0">
+                <Grid Margin="5,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30px"/>
+                        <RowDefinition Height="30px"/>
+                        <RowDefinition Height="30px"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label>Colour</Label>
+                    <ComboBox Name="Accent_ComboBox"
+                              SelectionChanged="Accent_ComboBox_SelectionChanged"
+                              Grid.Column="1">
+                    </ComboBox>
+
+                    <Label Grid.Row="1">Dark mode</Label>
+                    <Button Name="DarkMode_Toggle"
+                            Style="{DynamicResource SquareButtonStyle}"
+                            Click="DarkMode_Toggle_Click"
+                            Grid.Row="1" Grid.Column="1" BorderThickness="1">
+                        <iconPacks:PackIconFontAwesome Name="DarkMode_Icon" Kind="SunRegular" />
+                    </Button>
+                </Grid>
+            </Controls:Flyout>
+
+
+        </Controls:FlyoutsControl>
+    </Controls:MetroWindow.Flyouts>
+    
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="48"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="48"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Main player -->
+        <MediaElement Name="MainPlayer"
+                      ScrubbingEnabled="True"
+                      Stretch="UniformToFill"
+                      Grid.RowSpan="2" Grid.ColumnSpan="2"></MediaElement>
+        
+        <!-- Media control buttons -->
+        <Grid Name="MediaControlGrid"
+              Grid.Row="1" Grid.Column="1"
+              MouseEnter="MediaControlGrid_MouseEnter"
+              MouseLeave="MediaControlGrid_MouseLeave"
+              Opacity="0.1">
+            <Button Name="Play_Btn"
+                    Style="{DynamicResource MetroCircleButtonStyle}"
+                    Background="#FF838383">
+                <iconPacks:PackIconMaterial Kind="Play" />
+            </Button>
+            <Button Name="Pause_Btn"
+                    Style="{DynamicResource MetroCircleButtonStyle}"
+                    Background="#FF838383">
+                <iconPacks:PackIconMaterial Kind="Pause" />
+            </Button>
+            <Button Name="Stop_Btn"
+                    Style="{DynamicResource MetroCircleButtonStyle}"
+                    Background="#FF838383">
+                <iconPacks:PackIconMaterial Kind="Stop" />
+            </Button>
+            <Button Name="ShowControls_Btn"
+                    Style="{DynamicResource MetroCircleButtonStyle}"
+                    Background="#FF838383">
+                <iconPacks:PackIconMaterial Kind="PlusCircleMultipleOutline" />
+            </Button>
+        </Grid>
+        
+        <!-- File select screen --> 
+        <Button Name="SelectFile_Btn"
+                Click="SelectFile_Btn_Click"
+                Style="{DynamicResource SquareButtonStyle}"
+                BorderThickness="0"
+                Grid.RowSpan="2" Grid.ColumnSpan="2">
+            <StackPanel HorizontalAlignment="Center">
+                <iconPacks:PackIconFontAwesome Kind="FilmSolid" HorizontalAlignment="Center" Width="128" Height="128" />
+                <TextBlock Text="Load video" HorizontalAlignment="Center" FontSize="24"></TextBlock>
+            </StackPanel>
+        </Button>
 
     </Grid>
 </Controls:MetroWindow>
