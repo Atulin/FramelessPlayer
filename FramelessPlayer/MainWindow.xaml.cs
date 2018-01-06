@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,8 +13,11 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using System.IO;
 using MahApps.Metro;
 using MahApps.Metro.Controls;
+using Microsoft.Win32;
 
 namespace FramelessPlayer
 {
@@ -27,13 +31,17 @@ namespace FramelessPlayer
 
         private bool isPlaying = false;
         private bool isEnded = false;
+        private bool userIsDraggingSlider = false;
+
+        private DispatcherTimer timer = new DispatcherTimer();
+
 
         private string filePath = "";
 
         public MainWindow()
         {
             InitializeComponent();
-
+            
             // Get app accent and theme from settings and set it
             ThemeManager.ChangeAppStyle(Application.Current,
                                             ThemeManager.GetAccent(Properties.Settings.Default.Accent),
@@ -54,7 +62,29 @@ namespace FramelessPlayer
                 DarkMode_Icon.Kind = MahApps.Metro.IconPacks.PackIconFontAwesomeKind.MoonRegular;
                 darkmodeIconToggle = true;
             }
+
+            // Start timer
+            timer.Interval = TimeSpan.FromMilliseconds(500);
+            timer.Tick += TimerTick;
+            timer.Start();
+
         }
+
+        // Handle timer ticks
+        public void TimerTick (object sender, EventArgs e)
+        {
+            if (MainPlayer.Source != null && MainPlayer.NaturalDuration.HasTimeSpan)
+            {
+                // Update progressbar position
+                VideoProgress_Slider.Value = MainPlayer.Position.TotalSeconds;
+
+                // Update time display
+                Time_Label.Content = MainPlayer.Position.Hours.ToString("D2") + ":" + 
+                                     MainPlayer.Position.Minutes.ToString("D2") + ":" + 
+                                     MainPlayer.Position.Seconds.ToString("D2");
+            }
+        }
+
 
         // Handle settings button
         private void Settings_Btn_Click(object sender, RoutedEventArgs e)
@@ -166,7 +196,7 @@ namespace FramelessPlayer
 
         private void MediaControlGrid_MouseLeave(object sender, MouseEventArgs e)
         {
-            MediaControlGrid.Opacity = 0.1;
+            MediaControlGrid.Opacity = 0.05;
         }
 
         // Handle progress bar
@@ -220,7 +250,77 @@ namespace FramelessPlayer
 
         private void MainPlayer_MediaOpened(object sender, RoutedEventArgs e)
         {
+            var videoDuration = MainPlayer.NaturalDuration.TimeSpan.TotalSeconds;
 
+            VideoProgress_Slider.Maximum = videoDuration;
+        }
+
+        // Handle scrubbing
+        private void VideoProgress_Slider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            userIsDraggingSlider = true;
+        }
+
+        private void VideoProgress_Slider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            userIsDraggingSlider = false;
+            MainPlayer.Position = TimeSpan.FromSeconds(VideoProgress_Slider.Value);
+        }
+
+        private void VideoProgress_Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            TimeSpan totalTime = TimeSpan.FromSeconds(VideoProgress_Slider.Value);
+            VideoProgress_Slider.ToolTip = totalTime.Hours.ToString("D2") + ":" +
+                                           totalTime.Minutes.ToString("D2") + ":" +
+                                           totalTime.Seconds.ToString("D2");
+        }
+
+
+
+
+
+        private void Load_Click(object sender, RoutedEventArgs e)
+        {
+            var openfiles = new OpenFileDialog();
+            if (openfiles.ShowDialog() == true)
+            {
+                VLC.Stop();
+                VLC.LoadMedia(openfiles.FileName);
+                VLC.Play();
+            }
+            return;
+
+            String pathString = path.Text;
+
+            Uri uri = null;
+            if (!Uri.TryCreate(pathString, UriKind.Absolute, out uri)) return;
+
+            VLC.Stop();
+            VLC.LoadMedia(uri);
+            //if you pass a string instead of a Uri, LoadMedia will see if it is an absolute Uri, else will treat it as a file path
+            VLC.Play();
+        }
+
+        private void Play_Click(object sender, RoutedEventArgs e)
+        {
+            Thread.Sleep(10000);
+            VLC.Play();
+        }
+
+        private void Pause_Click(object sender, RoutedEventArgs e)
+        {
+            VLC.PauseOrResume();
+        }
+
+        private void Stop_Click(object sender, RoutedEventArgs e)
+        {
+            VLC.Stop();
+        }
+
+        private void ProgressBar_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var value = (float)(e.GetPosition(ProgressBar).X / ProgressBar.ActualWidth);
+            ProgressBar.Value = value;
         }
     }
 }

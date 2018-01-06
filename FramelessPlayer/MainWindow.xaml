@@ -4,6 +4,8 @@
                       xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
                       xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                       
+                      xmlns:wpf="clr-namespace:Meta.Vlc.Wpf;assembly=Meta.Vlc.Wpf"
+                      
                       Title="MainWindow"
                       
                       SaveWindowPosition="True"
@@ -11,10 +13,15 @@
                       Topmost="True"
                       
                       GlowBrush="{DynamicResource AccentColorBrush}"
+                      EnableDWMDropShadow="False"
                       
-                      Height="720" Width="1280"
-                      MinHeight="480" MinWidth="854">
+                      Height="750" Width="1280"
+                      MinHeight="510" MinWidth="854">
 
+
+    
+    
+    <!--Window commands-->
     <Controls:MetroWindow.LeftWindowCommands>
         <Controls:WindowCommands>
             <Button Name="Settings_Btn"
@@ -27,6 +34,7 @@
         </Controls:WindowCommands>
     </Controls:MetroWindow.LeftWindowCommands>
 
+    <!--Flyout controls-->
     <Controls:MetroWindow.Flyouts>
         <Controls:FlyoutsControl>
             
@@ -81,7 +89,7 @@
         <!-- Main player -->
         <MediaElement Name="MainPlayer"
                       ScrubbingEnabled="True"
-                      Stretch="UniformToFill"
+                      Stretch="Uniform"
                       Grid.RowSpan="2" Grid.ColumnSpan="2"
                       LoadedBehavior="Manual"
                       UnloadedBehavior="Manual"
@@ -93,7 +101,8 @@
               Grid.Row="1"
               MouseEnter="MediaControlGrid_MouseEnter"
               MouseLeave="MediaControlGrid_MouseLeave"
-              Opacity="0.1">
+              Opacity="0.1" Background="#19000000">
+            
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="10"/>
@@ -129,10 +138,23 @@
                 <iconPacks:PackIconMaterial Kind="DotsHorizontal" />
             </Button>
             
+            <!-- Display time -->
+            <Label Name="Time_Label"
+                   VerticalAlignment="Center" HorizontalAlignment="Left"
+                   Margin="5,5,5,3"
+                   FontSize="14"></Label>
+            
             <!--Progressbar-->
-            <ScrollBar Name="VideoProgress_Slider"
-                       Grid.Row="1" Grid.ColumnSpan="5"
-                       ScrollBar.Scroll="VideoProgress_Slider_Scroll"/>
+            <Slider Name="VideoProgress_Slider"
+                    Grid.Row="1" Grid.ColumnSpan="5"
+                    Style="{DynamicResource FlatSlider}"
+                    
+                    Minimum="0"
+                    TickFrequency="1"
+                    
+                    Thumb.DragStarted="VideoProgress_Slider_DragStarted"
+                    Thumb.DragCompleted="VideoProgress_Slider_DragCompleted"
+                    ValueChanged="VideoProgress_Slider_ValueChanged"/>
 
         </Grid>
         
@@ -147,6 +169,44 @@
                 <TextBlock Text="Load video" HorizontalAlignment="Center" FontSize="24"></TextBlock>
             </StackPanel>
         </Button>
+
+        <wpf:VlcPlayer x:Name="VLC" />
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="Play" HorizontalAlignment="Stretch" Click="Play_Click" />
+            <Button Grid.Column="1" Content="Pause" Click="Pause_Click" />
+            <Button Grid.Column="2" Content="Stop" Click="Stop_Click" />
+            
+            <Grid Grid.Column="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBox x:Name="path" />
+
+                <Button Grid.Column="1" Content="Load" Click="Load_Click" />
+            </Grid>
+
+            <Grid Grid.Column="4" Background="#FFDDDDDD">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Volume:" VerticalAlignment="Center"></TextBlock>
+                <Slider Grid.Column="1" Value="{Binding Volume, ElementName=Player}" VerticalAlignment="Center" Maximum="100"/>
+            </Grid>
+
+            <ProgressBar Grid.Column="5" x:Name="ProgressBar" Opacity="0.8" Value="{Binding Position, ElementName=Player}" VerticalAlignment="Bottom" Height="10" Maximum="1" SmallChange="0.00001" MouseDown="ProgressBar_MouseDown" />
+        </Grid>
 
     </Grid>
 </Controls:MetroWindow>

@@ -38,6 +38,9 @@ namespace FramelessPlayer
             Sienna
         }
 
+        // Enum with window effects
+
+
         // Tuple with theme
         public static Tuple<AppTheme, Accent> theme = ThemeManager.DetectAppStyle(Application.Current);
     }
