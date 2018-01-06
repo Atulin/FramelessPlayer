@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,8 +13,13 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using System.IO;
+using System.ComponentModel;
 using MahApps.Metro;
 using MahApps.Metro.Controls;
+using Microsoft.Win32;
+using Meta.Vlc.Wpf;
 
 namespace FramelessPlayer
 {
@@ -26,14 +32,12 @@ namespace FramelessPlayer
         private bool darkmodeIconToggle = false;
 
         private bool isPlaying = false;
-        private bool isEnded = false;
-
-        private string filePath = "";
+        private bool isStopped = false;
 
         public MainWindow()
         {
             InitializeComponent();
-
+            
             // Get app accent and theme from settings and set it
             ThemeManager.ChangeAppStyle(Application.Current,
                                             ThemeManager.GetAccent(Properties.Settings.Default.Accent),
@@ -54,6 +58,9 @@ namespace FramelessPlayer
                 DarkMode_Icon.Kind = MahApps.Metro.IconPacks.PackIconFontAwesomeKind.MoonRegular;
                 darkmodeIconToggle = true;
             }
+
+            // Set being on top based on settings
+            Topmost = Properties.Settings.Default.IsOnTop;
         }
 
         // Handle settings button
@@ -130,97 +137,146 @@ namespace FramelessPlayer
             Properties.Settings.Default.Theme = theme;
         }
 
-        // Handle file selection
-        private void SelectFile_Btn_Click(object sender, RoutedEventArgs e)
+        // Handle being on top switch
+        private void KeepOnTop_Toggle_Click(object sender, RoutedEventArgs e)
         {
-            // Create OpenFileDialog
-            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog();
-
-            // Set filter for file extension and default file 
-            dlg.DefaultExt = ".mp4";
-
-            dlg.Filter = "Video files|*.mp4;*.avi;*.mkv";
-
-            // Display OpenFileDialog by calling ShowDialog method
-            bool? result = dlg.ShowDialog();
-
-            // Get the selected file name and display in a TextBox
-            if (result == true)
+            if (Topmost)
             {
-                filePath = dlg.FileName;
-            }
-
-            MainPlayer.Source = new Uri(filePath);
-
-            SelectFile_Btn.Visibility = Visibility.Collapsed;
-
-            // Move video to beginning
-            MainPlayer.Stop();
-        }
-
-        // Handle media controls
-        private void MediaControlGrid_MouseEnter(object sender, MouseEventArgs e)
-        {
-            MediaControlGrid.Opacity = 1;
-        }
-
-        private void MediaControlGrid_MouseLeave(object sender, MouseEventArgs e)
-        {
-            MediaControlGrid.Opacity = 0.1;
-        }
-
-        // Handle progress bar
-        private void VideoProgress_Slider_Scroll(object sender, System.Windows.Controls.Primitives.ScrollEventArgs e)
-        {
-            MainPlayer.Position = TimeSpan.FromSeconds(VideoProgress_Slider.Value);
-        }
-
-        // Handle media buttons
-        private void Play_Btn_Click(object sender, RoutedEventArgs e)
-        {
-            if (isEnded)
-            {
-                MainPlayer.Position = TimeSpan.FromSeconds(0);
-                MainPlayer.Play();
-                isPlaying = true;
-                PlayButton_Ico.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
-            }
-            else if (isPlaying)
-            {
-                MainPlayer.Pause();
-                isPlaying = false;
-                PlayButton_Ico.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
+                Topmost = false;
+                icoKeepOnTop.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.ArrangeBringForward;
+                KeepOnTop_Toggle.ToolTip = "Currently window doesn't stay on top";
             }
             else
             {
-                MainPlayer.Play();
+                Topmost = true;
+                icoKeepOnTop.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.ArrangeSendBackward;
+                KeepOnTop_Toggle.ToolTip = "Currently window stays on top";
+            }
+
+            Properties.Settings.Default.IsOnTop = Topmost;
+        }
+
+        // Handle titlebar minification switch
+        private void MinifyTitlebar_Toggle_Click(object sender, RoutedEventArgs e)
+        {
+            if (ShowTitleBar)
+            {
+                ShowTitleBar = false;
+            }
+            else
+            {
+                ShowTitleBar = true;
+            }
+           
+        }
+
+        #region --- Cleanup ---
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            Player.Dispose();
+            ApiManager.ReleaseAll();
+            base.OnClosing(e);
+        }
+
+        #endregion --- Cleanup ---
+
+        #region --- Events ---
+
+        // Handle load button
+        private void Load_Click(object sender, RoutedEventArgs e)
+        {
+            var openfiles = new OpenFileDialog
+            {
+                // Set file filter
+                Filter = "Videos|*.avi;*.mp4;*.mkv;*.mpeg;|All files|*.*"
+            };
+
+            if (openfiles.ShowDialog() == true)
+            {
+                Player.Stop();
+                Player.LoadMedia(openfiles.FileName);
+                Player.Play();
+
                 isPlaying = true;
-                PlayButton_Ico.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
+                icoPlayPause.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
+                btnPlay.ToolTip = "Pause";
+
+                grVideoControls.Opacity = 0.05;
+            }
+            return;
+
+        }
+
+        // Handle play/pause button
+        private void Play_Click(object sender, RoutedEventArgs e)
+        {
+            if (isStopped)
+            {
+                Player.Play();
+                icoPlayPause.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
+                btnPlay.ToolTip = "Pause";
+                isPlaying = true;
+                isStopped = false;
+            }
+            else
+            {
+                Player.PauseOrResume();
+
+                if (isPlaying)
+                {
+                    icoPlayPause.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
+                    btnPlay.ToolTip = "Play";
+                    isPlaying = false;
+                }
+                else
+                {
+                    icoPlayPause.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
+                    btnPlay.ToolTip = "Pause";
+                    isPlaying = true;
+                }
             }
         }
 
-        private void Stop_Btn_Click(object sender, RoutedEventArgs e)
+        // Handle stop button
+        private void Stop_Click(object sender, RoutedEventArgs e)
         {
-            MainPlayer.Stop();
-            isPlaying = false;
-            PlayButton_Ico.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
+            Player.Stop();
+            isStopped = true;
+            icoPlayPause.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
         }
 
-        private void Options_Btn_Click(object sender, RoutedEventArgs e)
+        private void VideoProgressBar_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-
+            var value = (float)(e.GetPosition(VideoProgressBar).X / VideoProgressBar.ActualWidth);
+            VideoProgressBar.Value = value;
         }
 
-        // Handle player events
-        private void MainPlayer_MediaEnded(object sender, RoutedEventArgs e)
+        #endregion --- Events ---
+
+        // Handle scrubbing
+        private void VideoProgress_Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            isPlaying = false;
-            PlayButton_Ico.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
+            TimeSpan totalTime = TimeSpan.FromSeconds(VideoProgressBar.Value);
+            VideoProgressBar.ToolTip = totalTime.Hours.ToString("D2") + ":" +
+                                           totalTime.Minutes.ToString("D2") + ":" +
+                                           totalTime.Seconds.ToString("D2");
         }
 
-        private void MainPlayer_MediaOpened(object sender, RoutedEventArgs e)
-        {
+        #region --- Controls opacity ---
 
+        private void grVideoControls_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (isPlaying)
+                grVideoControls.Opacity = 0.8;
         }
+
+        private void grVideoControls_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (isPlaying)
+                grVideoControls.Opacity = 0.05;
+        }
+
+        #endregion --- Controls opacity ---
     }
 }
