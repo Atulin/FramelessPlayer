@@ -46,5 +46,17 @@ namespace FramelessPlayer.Properties {
                 this["Theme"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IsOnTop {
+            get {
+                return ((bool)(this["IsOnTop"]));
+            }
+            set {
+                this["IsOnTop"] = value;
+            }
+        }
     }
 }

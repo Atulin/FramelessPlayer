@@ -5,6 +5,7 @@
                       xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
                       
                       xmlns:wpf="clr-namespace:Meta.Vlc.Wpf;assembly=Meta.Vlc.Wpf"
+                      xmlns:system="clr-namespace:System;assembly=mscorlib"
                       
                       Title="MainWindow"
                       
@@ -19,8 +20,8 @@
                       MinHeight="510" MinWidth="854">
 
 
-    
-    
+
+
     <!--Window commands-->
     <Controls:MetroWindow.LeftWindowCommands>
         <Controls:WindowCommands>
@@ -37,7 +38,7 @@
     <!--Flyout controls-->
     <Controls:MetroWindow.Flyouts>
         <Controls:FlyoutsControl>
-            
+
             <!-- Settings menu flyout -->
             <Controls:Flyout Name="Settings_Flyout"
                              Header="Settings"
@@ -51,24 +52,51 @@
                         <RowDefinition Height="30px"/>
                         <RowDefinition Height="30px"/>
                         <RowDefinition Height="30px"/>
+                        <RowDefinition Height="30px"/>
+                        <RowDefinition Height="30px"/>
+                        <RowDefinition Height="30px"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="150"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
 
+                    <!-- Colour selection -->
                     <Label>Colour</Label>
                     <ComboBox Name="Accent_ComboBox"
                               SelectionChanged="Accent_ComboBox_SelectionChanged"
                               Grid.Column="1">
                     </ComboBox>
 
+                    <!-- Dark mode toggle -->
                     <Label Grid.Row="1">Dark mode</Label>
                     <Button Name="DarkMode_Toggle"
                             Style="{DynamicResource SquareButtonStyle}"
                             Click="DarkMode_Toggle_Click"
-                            Grid.Row="1" Grid.Column="1" BorderThickness="1">
+                            Grid.Row="1" Grid.Column="1"
+                            BorderThickness="1">
                         <iconPacks:PackIconFontAwesome Name="DarkMode_Icon" Kind="SunRegular" />
+                    </Button>
+
+                    <!-- Keep on top toggle -->
+                    <Label Grid.Row="2">Keep on top</Label>
+                    <Button Name="KeepOnTop_Toggle"
+                            ToolTip="Currently window stays on top"
+                            Style="{DynamicResource SquareButtonStyle}"
+                            Click="KeepOnTop_Toggle_Click"
+                            Grid.Row="2" Grid.Column="1"
+                            BorderThickness="1">
+                        <iconPacks:PackIconMaterial Name="icoKeepOnTop" Kind="ArrangeSendBackward" />
+                    </Button>
+                    
+                    <!-- Minify titlebar -->
+                    <Label Grid.Row="3">Minify titlebar</Label>
+                    <Button Name="MinifyTitlebar_Toggle"
+                            Style="{DynamicResource SquareButtonStyle}"
+                            Click="MinifyTitlebar_Toggle_Click"
+                            Grid.Row="3" Grid.Column="1"
+                            BorderThickness="1">
+                        <iconPacks:PackIconMaterial Name="icoMinifyTitlebar" Kind="Eye" />
                     </Button>
                 </Grid>
             </Controls:Flyout>
@@ -76,137 +104,99 @@
 
         </Controls:FlyoutsControl>
     </Controls:MetroWindow.Flyouts>
-    
-    <Grid>
+
+    <Grid x:Name="LayoutParent">
+        <Grid.Resources>
+            <x:Array Type="{x:Type system:String}" x:Key="VlcOptions">
+                <system:String>-I</system:String>
+                <system:String>--dummy-quiet</system:String>
+                <system:String>--ignore-config</system:String>
+                <system:String>--no-video-title</system:String>
+                <system:String>--no-sub-autodetect-file</system:String>
+                <system:String>-v</system:String>
+            </x:Array>
+        </Grid.Resources>
+
         <Grid.RowDefinitions>
             <RowDefinition/>
-            <RowDefinition Height="48"/>
+            <RowDefinition Height="52"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
 
         <!-- Main player -->
-        <MediaElement Name="MainPlayer"
-                      ScrubbingEnabled="True"
-                      Stretch="Uniform"
-                      Grid.RowSpan="2" Grid.ColumnSpan="2"
-                      LoadedBehavior="Manual"
-                      UnloadedBehavior="Manual"
-                      MediaEnded="MainPlayer_MediaEnded"
-                      MediaOpened="MainPlayer_MediaOpened"></MediaElement>
-        
-        <!-- Media control buttons -->
-        <Grid Name="MediaControlGrid"
+        <wpf:VlcPlayer x:Name="Player"
+                       Grid.RowSpan="2"
+                       VlcOption="{StaticResource VlcOptions}"
+                       LibVlcPath="..\..\libvlc"
+                       EndBehavior="Stop"
+                       Stretch="Uniform"/>
+
+        <Grid x:Name="grVideoControls"
               Grid.Row="1"
-              MouseEnter="MediaControlGrid_MouseEnter"
-              MouseLeave="MediaControlGrid_MouseLeave"
-              Opacity="0.1" Background="#19000000">
-            
+              Opacity="0.8"
+              MouseEnter="grVideoControls_MouseEnter"
+              MouseLeave="grVideoControls_MouseLeave">
             <Grid.RowDefinitions>
                 <RowDefinition/>
-                <RowDefinition Height="10"/>
+                <RowDefinition Height="20"/>
             </Grid.RowDefinitions>
+
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
-                <ColumnDefinition Width="38"/>
-                <ColumnDefinition Width="38"/>
-                <ColumnDefinition Width="38"/>
+                <ColumnDefinition Width="32"/>
+                <ColumnDefinition Width="32"/>
+                <ColumnDefinition Width="32"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <!--Buttons-->
-            <Button Name="Play_Btn"
-                    Click="Play_Btn_Click"
+            <!-- Main controls -->
+            <Button Name="btnPlay"
+                    Grid.Column="1" Click="Play_Click" 
+                    ToolTip="Play"
                     Style="{DynamicResource MetroCircleButtonStyle}"
-                    Background="#FF838383"
-                    Grid.Column="1">
-                <iconPacks:PackIconMaterial Name="PlayButton_Ico" Kind="Play" />
+                    Width="36" Height="36"
+                    Margin="-2,-2,0,0">
+                <iconPacks:PackIconMaterial Name="icoPlayPause" Kind="Play" />
             </Button>
-            <Button Name="Stop_Btn"
-                    Click="Stop_Btn_Click"
+
+            <Button Grid.Column="2" Click="Stop_Click"
+                    ToolTip="Stop"
                     Style="{DynamicResource MetroCircleButtonStyle}"
-                    Background="#FF838383"
-                    Grid.Column="2">
+                    Width="36" Height="36"
+                    Margin="-2,-2,0,0">
                 <iconPacks:PackIconMaterial Kind="Stop" />
             </Button>
-            <Button Name="Options_Btn"
-                    Click="Options_Btn_Click"
+
+            <Button Grid.Column="3" Click="Load_Click"
+                    ToolTip="Load file"
                     Style="{DynamicResource MetroCircleButtonStyle}"
-                    Background="#FF838383"
-                    Grid.Column="3">
-                <iconPacks:PackIconMaterial Kind="DotsHorizontal" />
+                    Width="36" Height="36"
+                    Margin="-2,-2,0,0">
+                <iconPacks:PackIconMaterial Kind="OpenInApp" />
             </Button>
-            
-            <!-- Display time -->
-            <Label Name="Time_Label"
-                   VerticalAlignment="Center" HorizontalAlignment="Left"
-                   Margin="5,5,5,3"
-                   FontSize="14"></Label>
-            
-            <!--Progressbar-->
-            <Slider Name="VideoProgress_Slider"
-                    Grid.Row="1" Grid.ColumnSpan="5"
-                    Style="{DynamicResource FlatSlider}"
-                    
-                    Minimum="0"
-                    TickFrequency="1"
-                    
-                    Thumb.DragStarted="VideoProgress_Slider_DragStarted"
-                    Thumb.DragCompleted="VideoProgress_Slider_DragCompleted"
-                    ValueChanged="VideoProgress_Slider_ValueChanged"/>
+
+            <!-- Volume control -->
+            <Slider Grid.Column="4" 
+                    Value="{Binding Volume, ElementName=Player}" 
+                    VerticalAlignment="Center" HorizontalAlignment="Right"
+                    Margin="0,0,10,0"
+                    Width="100"
+                    Maximum="100"
+                    ToolTip="Volume"/>
+
+            <ProgressBar x:Name="VideoProgressBar"
+                         Grid.Row="1"
+                         Grid.ColumnSpan="5"
+                         Opacity="0.8" 
+                         Value="{Binding Position, ElementName=Player}" 
+                         VerticalAlignment="Stretch" 
+                         Height="20" 
+                         Maximum="1" SmallChange="0.00001" 
+                         MouseDown="VideoProgressBar_MouseDown"
+                         Margin="5,0,5,5" />
 
         </Grid>
+
         
-        <!-- File select screen --> 
-        <Button Name="SelectFile_Btn"
-                Click="SelectFile_Btn_Click"
-                Style="{DynamicResource SquareButtonStyle}"
-                BorderThickness="0"
-                Grid.RowSpan="2" Grid.ColumnSpan="2">
-            <StackPanel HorizontalAlignment="Center">
-                <iconPacks:PackIconFontAwesome Kind="FilmSolid" HorizontalAlignment="Center" Width="128" Height="128" />
-                <TextBlock Text="Load video" HorizontalAlignment="Center" FontSize="24"></TextBlock>
-            </StackPanel>
-        </Button>
-
-        <wpf:VlcPlayer x:Name="VLC" />
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="10*"/>
-                <ColumnDefinition Width="10*"/>
-                <ColumnDefinition Width="2*"/>
-            </Grid.ColumnDefinitions>
-
-            <Button Grid.Column="0" Content="Play" HorizontalAlignment="Stretch" Click="Play_Click" />
-            <Button Grid.Column="1" Content="Pause" Click="Pause_Click" />
-            <Button Grid.Column="2" Content="Stop" Click="Stop_Click" />
-            
-            <Grid Grid.Column="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <TextBox x:Name="path" />
-
-                <Button Grid.Column="1" Content="Load" Click="Load_Click" />
-            </Grid>
-
-            <Grid Grid.Column="4" Background="#FFDDDDDD">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="Volume:" VerticalAlignment="Center"></TextBlock>
-                <Slider Grid.Column="1" Value="{Binding Volume, ElementName=Player}" VerticalAlignment="Center" Maximum="100"/>
-            </Grid>
-
-            <ProgressBar Grid.Column="5" x:Name="ProgressBar" Opacity="0.8" Value="{Binding Position, ElementName=Player}" VerticalAlignment="Bottom" Height="10" Maximum="1" SmallChange="0.00001" MouseDown="ProgressBar_MouseDown" />
-        </Grid>
-
     </Grid>
+
 </Controls:MetroWindow>
