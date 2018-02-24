@@ -57,5 +57,5 @@ using System.Windows;
 
 // Set VLC player
 //Set the path of LibVlc
-[assembly: VlcSettings(@"..\LibVlc")]
+[assembly: VlcSettings(@"LibVlc")]
 

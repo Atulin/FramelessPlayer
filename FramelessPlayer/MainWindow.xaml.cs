@@ -34,6 +34,8 @@ namespace FramelessPlayer
         private bool isPlaying = false;
         private bool isStopped = false;
 
+        public TimeSpan videoDuration = new TimeSpan();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -61,7 +63,31 @@ namespace FramelessPlayer
 
             // Set being on top based on settings
             Topmost = Properties.Settings.Default.IsOnTop;
+
+            // Set volume
+            Player.Volume = (int)Properties.Settings.Default.Volume;
+            VolumeSlider.Value = Properties.Settings.Default.Volume;
+
+            // Check if a file is being opened through shell extension and play is if so
+            var args = Environment.GetCommandLineArgs();
+
+            if (args.Length > 1)
+            {
+                Player.Stop();
+                Player.LoadMedia(args[1]);
+                Player.Play();
+
+                isPlaying = true;
+                icoPlayPause.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
+                btnPlay.ToolTip = "Pause";
+
+                grVideoControls.Opacity = 0.0;
+
+                // Remove d'n'd overlay
+                DragDropArea.Visibility = Visibility.Collapsed;
+            }
         }
+
 
         // Handle settings button
         private void Settings_Btn_Click(object sender, RoutedEventArgs e)
@@ -162,10 +188,16 @@ namespace FramelessPlayer
             if (ShowTitleBar)
             {
                 ShowTitleBar = false;
+                LayoutParent.Margin = new Thickness(0, -30, 0, 0);
+                this.Height -= 30;
+                //this.Top -= 30;
             }
             else
             {
                 ShowTitleBar = true;
+                LayoutParent.Margin = new Thickness(0, 0, 0, 0);
+                this.Height += 30;
+                //this.Top += 30;
             }
            
         }
@@ -197,12 +229,15 @@ namespace FramelessPlayer
                 Player.Stop();
                 Player.LoadMedia(openfiles.FileName);
                 Player.Play();
-
+                
                 isPlaying = true;
                 icoPlayPause.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
                 btnPlay.ToolTip = "Pause";
 
-                grVideoControls.Opacity = 0.05;
+                grVideoControls.Opacity = 0.0;
+
+                // Remove d'n'd overlay
+                DragDropArea.Visibility = Visibility.Collapsed;
             }
             return;
 
@@ -218,6 +253,9 @@ namespace FramelessPlayer
                 btnPlay.ToolTip = "Pause";
                 isPlaying = true;
                 isStopped = false;
+
+                // Remove d'n'd overlay
+                DragDropArea.Visibility = Visibility.Collapsed;
             }
             else
             {
@@ -234,6 +272,9 @@ namespace FramelessPlayer
                     icoPlayPause.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
                     btnPlay.ToolTip = "Pause";
                     isPlaying = true;
+
+                    // Remove d'n'd overlay
+                    DragDropArea.Visibility = Visibility.Collapsed;
                 }
             }
         }
@@ -244,12 +285,44 @@ namespace FramelessPlayer
             Player.Stop();
             isStopped = true;
             icoPlayPause.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Play;
+
+            // Show d'n'd overlay
+            DragDropArea.Visibility = Visibility.Visible;
         }
 
+        // Handle progressbar progress
         private void VideoProgressBar_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             var value = (float)(e.GetPosition(VideoProgressBar).X / VideoProgressBar.ActualWidth);
             VideoProgressBar.Value = value;
+        }
+
+        // Handle fullscreen button
+        bool isFullscreen = false;
+        private void btnFullscreen_Click(object sender, RoutedEventArgs e)
+        {
+            if (isFullscreen)
+            {
+                ResizeMode = ResizeMode.CanResize;
+                WindowState = WindowState.Normal;
+                LeftWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Always;
+                RightWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Always;
+                WindowButtonCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Always;
+            }
+            else
+            {
+                ResizeMode = ResizeMode.NoResize;
+                WindowState = WindowState.Maximized;
+                LeftWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Never;
+                RightWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Never;
+                WindowButtonCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Never;
+            }
+
+            isFullscreen = !isFullscreen;
+
+            ShowTitleBar = !isFullscreen;
+            IgnoreTaskbarOnMaximize = isFullscreen;
+            
         }
 
         #endregion --- Events ---
@@ -265,6 +338,7 @@ namespace FramelessPlayer
 
         #region --- Controls opacity ---
 
+        // Handle controls opacity
         private void grVideoControls_MouseEnter(object sender, MouseEventArgs e)
         {
             if (isPlaying)
@@ -274,9 +348,60 @@ namespace FramelessPlayer
         private void grVideoControls_MouseLeave(object sender, MouseEventArgs e)
         {
             if (isPlaying)
-                grVideoControls.Opacity = 0.05;
+                grVideoControls.Opacity = 0.0;
         }
 
         #endregion --- Controls opacity ---
+
+        // Handle KoFi button
+        private void btnKoFi_Click(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://ko-fi.com/H2H365N9");
+        }
+
+        // Handle drag'n'drop files
+        private void DragDropArea_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                Player.Stop();
+                Player.LoadMedia(files[0]);
+                Player.Play();
+
+                isPlaying = true;
+                icoPlayPause.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
+                btnPlay.ToolTip = "Pause";
+
+                grVideoControls.Opacity = 0.0;
+
+                // Remove d'n'd overlay
+                DragDropArea.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        // Handle video progress
+        private void Player_TimeChanged(object sender, EventArgs e)
+        {
+            string currentTime = Player.Time.ToString(@"hh\:mm\:ss");
+            string totalTime = Player.VlcMediaPlayer.Media.Duration.ToString(@"hh\:mm\:ss");
+
+            VideoTime.Text = currentTime + "/" + totalTime;
+        }
+
+        // Handle volume change
+        private void VolumeSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            Properties.Settings.Default.Volume = VolumeSlider.Value;
+            Properties.Settings.Default.Save();
+        }
+
+        // Handle app closed
+        private void MetroWindow_Closed(object sender, EventArgs e)
+        {
+            // Save all settings changes
+            Properties.Settings.Default.Save();
+        }
     }
 }

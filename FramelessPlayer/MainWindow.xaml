@@ -7,19 +7,20 @@
                       xmlns:wpf="clr-namespace:Meta.Vlc.Wpf;assembly=Meta.Vlc.Wpf"
                       xmlns:system="clr-namespace:System;assembly=mscorlib"
                       
-                      Title="MainWindow"
+                      Title="Frameless Player ▶"
                       
                       SaveWindowPosition="True"
                       ResizeMode="CanResize"
                       Topmost="True"
+                      WindowState="Normal"
                       
+                      Closed="MetroWindow_Closed"
+                                                                  
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       EnableDWMDropShadow="False"
                       
                       Height="750" Width="1280"
-                      MinHeight="510" MinWidth="854">
-
-
+                      MinHeight="380" MinWidth="640">
 
 
     <!--Window commands-->
@@ -55,6 +56,8 @@
                         <RowDefinition Height="30px"/>
                         <RowDefinition Height="30px"/>
                         <RowDefinition Height="30px"/>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="48px"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="150"/>
@@ -98,6 +101,14 @@
                             BorderThickness="1">
                         <iconPacks:PackIconMaterial Name="icoMinifyTitlebar" Kind="Eye" />
                     </Button>
+                    
+                    <!-- Ko-fi button -->
+                    <Button Name="btnKoFi"
+                            Click="btnKoFi_Click"
+                            Grid.Row="7" Grid.ColumnSpan="2"
+                            Style="{DynamicResource SquareButtonStyle}" BorderBrush="{x:Null}" Background="{x:Null}" Foreground="{x:Null}">
+                        <Image Source="Imgs/kofi5.png"></Image>
+                    </Button>
                 </Grid>
             </Controls:Flyout>
 
@@ -126,15 +137,42 @@
         <wpf:VlcPlayer x:Name="Player"
                        Grid.RowSpan="2"
                        VlcOption="{StaticResource VlcOptions}"
-                       LibVlcPath="..\..\libvlc"
+                       LibVlcPath="libvlc"
                        EndBehavior="Stop"
+                       TimeChanged="Player_TimeChanged"
                        Stretch="Uniform"/>
+        
+        <!-- Drag 'n' drop layer -->
+        <Grid Name="DragDropArea"
+              Drop="DragDropArea_Drop"
+              AllowDrop="True"
+              Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
 
+            <Rectangle Fill="#19808080" Grid.RowSpan="4"></Rectangle>
+
+            <iconPacks:PackIconEntypo Kind="Hand"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Bottom"
+                                      Foreground="#7F808080" Margin="0" 
+                                      Height="Auto" 
+                                      MinWidth="70" MinHeight="70" Grid.Row="1" />
+
+            <TextBlock Text="Drag your file here" FontSize="50" FontWeight="Bold" Foreground="#7F808080" TextAlignment="Center" Grid.Row="2"></TextBlock>
+
+        </Grid>
+        
         <Grid x:Name="grVideoControls"
               Grid.Row="1"
               Opacity="0.8"
               MouseEnter="grVideoControls_MouseEnter"
-              MouseLeave="grVideoControls_MouseLeave">
+              MouseLeave="grVideoControls_MouseLeave"
+              Background="{DynamicResource AccentColorBrush}">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="20"/>
@@ -148,6 +186,16 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
+            <!-- Fullscreen -->
+            <Button Name="btnFullscreen"
+                    Click="btnFullscreen_Click"
+                    ToolTip="Fullscreen"
+                    Style="{DynamicResource MetroCircleButtonStyle}"
+                    Width="36" Height="36"
+                    Margin="-2,-2,0,0" HorizontalAlignment="Left">
+                <iconPacks:PackIconMaterial Name="icoFullscreen" Kind="Fullscreen" />
+            </Button>
+            
             <!-- Main controls -->
             <Button Name="btnPlay"
                     Grid.Column="1" Click="Play_Click" 
@@ -175,14 +223,18 @@
             </Button>
 
             <!-- Volume control -->
-            <Slider Grid.Column="4" 
+            <Slider Name="VolumeSlider"
+                    Grid.Column="4" 
                     Value="{Binding Volume, ElementName=Player}" 
+                    Thumb.DragCompleted="VolumeSlider_DragCompleted"
                     VerticalAlignment="Center" HorizontalAlignment="Right"
                     Margin="0,0,10,0"
                     Width="100"
                     Maximum="100"
                     ToolTip="Volume"/>
 
+            <!-- Progressbar -->
+            
             <ProgressBar x:Name="VideoProgressBar"
                          Grid.Row="1"
                          Grid.ColumnSpan="5"
@@ -193,7 +245,9 @@
                          Maximum="1" SmallChange="0.00001" 
                          MouseDown="VideoProgressBar_MouseDown"
                          Margin="5,0,5,5" />
-
+            <TextBlock Name="VideoTime"
+                       Grid.Row="1"
+                       Margin="8,-1,0,0"></TextBlock>
         </Grid>
 
         
