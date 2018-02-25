@@ -11,7 +11,7 @@
                       
                       SaveWindowPosition="True"
                       ResizeMode="CanResize"
-                      Topmost="True"
+                      Topmost="False"
                       WindowState="Normal"
                       
                       Closed="MetroWindow_Closed"
@@ -50,17 +50,17 @@
                              BorderBrush="#E5838383" BorderThickness="0,0,1,0">
                 <Grid Margin="5,0">
                     <Grid.RowDefinitions>
-                        <RowDefinition Height="30px"/>
-                        <RowDefinition Height="30px"/>
-                        <RowDefinition Height="30px"/>
-                        <RowDefinition Height="30px"/>
-                        <RowDefinition Height="30px"/>
-                        <RowDefinition Height="30px"/>
+                        <RowDefinition Height="36px"/>
+                        <RowDefinition Height="36px"/>
+                        <RowDefinition Height="36px"/>
+                        <RowDefinition Height="36px"/>
+                        <RowDefinition Height="36px"/>
+                        <RowDefinition Height="36px"/>
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="48px"/>
                     </Grid.RowDefinitions>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="250"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
 
@@ -73,34 +73,38 @@
 
                     <!-- Dark mode toggle -->
                     <Label Grid.Row="1">Dark mode</Label>
-                    <Button Name="DarkMode_Toggle"
-                            Style="{DynamicResource SquareButtonStyle}"
-                            Click="DarkMode_Toggle_Click"
-                            Grid.Row="1" Grid.Column="1"
-                            BorderThickness="1">
-                        <iconPacks:PackIconFontAwesome Name="DarkMode_Icon" Kind="SunRegular" />
-                    </Button>
+                    <Controls:ToggleSwitch Name="DarkMode_Toggle"
+                                           IsChecked="True"
+                                           Click="DarkMode_Toggle_Click"
+                                           Grid.Row="1" Grid.Column="1"
+                                           BorderThickness="1">
+                    </Controls:ToggleSwitch>
 
                     <!-- Keep on top toggle -->
                     <Label Grid.Row="2">Keep on top</Label>
-                    <Button Name="KeepOnTop_Toggle"
-                            ToolTip="Currently window stays on top"
-                            Style="{DynamicResource SquareButtonStyle}"
-                            Click="KeepOnTop_Toggle_Click"
-                            Grid.Row="2" Grid.Column="1"
-                            BorderThickness="1">
-                        <iconPacks:PackIconMaterial Name="icoKeepOnTop" Kind="ArrangeSendBackward" />
-                    </Button>
-                    
+                    <Controls:ToggleSwitch Name="KeepOnTop_Toggle"
+                                           IsChecked="False"
+                                           Click="KeepOnTop_Toggle_Click"
+                                           Grid.Row="2" Grid.Column="1"
+                                           BorderThickness="1">
+                    </Controls:ToggleSwitch>
+
                     <!-- Minify titlebar -->
                     <Label Grid.Row="3">Minify titlebar</Label>
-                    <Button Name="MinifyTitlebar_Toggle"
-                            Style="{DynamicResource SquareButtonStyle}"
-                            Click="MinifyTitlebar_Toggle_Click"
-                            Grid.Row="3" Grid.Column="1"
-                            BorderThickness="1">
-                        <iconPacks:PackIconMaterial Name="icoMinifyTitlebar" Kind="Eye" />
-                    </Button>
+                    <Controls:ToggleSwitch Name="MinifyTitlebar_Toggle"
+                                           IsChecked="False"
+                                           Click="MinifyTitlebar_Toggle_Click"
+                                           Grid.Row="3" Grid.Column="1"
+                                           BorderThickness="1">
+                    </Controls:ToggleSwitch>
+
+                    <!-- Compact ptogress bar opacity -->
+                    <Label Grid.Row="4">Compact progress bar opacity</Label>
+                    <Slider Name="CompactProgressOpacity_Slider"
+                            Value="0.8"
+                            Maximum="1" Minimum="0"
+                            ValueChanged="CompactProgressOpacity_Slider_ValueChanged"
+                            Grid.Row="4" Grid.Column="1"></Slider>
                     
                     <!-- Ko-fi button -->
                     <Button Name="btnKoFi"
@@ -141,7 +145,17 @@
                        EndBehavior="Stop"
                        TimeChanged="Player_TimeChanged"
                        Stretch="Uniform"/>
-        
+
+        <!-- Micro progress bar -->
+        <ProgressBar Name="CompactProgressBar"
+                     Grid.Row="1"
+                     Opacity="0.8" 
+                     Value="{Binding Position, ElementName=Player}"
+                     VerticalAlignment="Bottom" 
+                     Height="1" 
+                     Maximum="1" SmallChange="0.00001"
+                     Margin="0,0,0,-8" />
+
         <!-- Drag 'n' drop layer -->
         <Grid Name="DragDropArea"
               Drop="DragDropArea_Drop"

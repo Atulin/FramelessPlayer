@@ -70,5 +70,29 @@ namespace FramelessPlayer.Properties {
                 this["Volume"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsTitlebarMinified {
+            get {
+                return ((bool)(this["IsTitlebarMinified"]));
+            }
+            set {
+                this["IsTitlebarMinified"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.8")]
+        public double CompactProgressBarOpacity {
+            get {
+                return ((double)(this["CompactProgressBarOpacity"]));
+            }
+            set {
+                this["CompactProgressBarOpacity"] = value;
+            }
+        }
     }
 }

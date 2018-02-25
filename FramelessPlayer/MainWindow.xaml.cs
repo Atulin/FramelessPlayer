@@ -29,7 +29,6 @@ namespace FramelessPlayer
     public partial class MainWindow : MetroWindow
     {
         private bool settingsToggle = false;
-        private bool darkmodeIconToggle = false;
 
         private bool isPlaying = false;
         private bool isStopped = false;
@@ -53,20 +52,29 @@ namespace FramelessPlayer
 
             // Set theme button icon based on settings
             if (Properties.Settings.Default.Theme == "BaseLight")
+                DarkMode_Toggle.IsChecked = false;
+            else
+                DarkMode_Toggle.IsChecked = true;
+
+            //Set titlebar minified
+            if (Properties.Settings.Default.IsTitlebarMinified)
             {
-                DarkMode_Icon.Kind = MahApps.Metro.IconPacks.PackIconFontAwesomeKind.SunRegular;
-                darkmodeIconToggle = false;
-            } else {
-                DarkMode_Icon.Kind = MahApps.Metro.IconPacks.PackIconFontAwesomeKind.MoonRegular;
-                darkmodeIconToggle = true;
+                LayoutParent.Margin = new Thickness(0, -30, 0, 0);
+                this.Height -= 30;
             }
+            ShowTitleBar = !Properties.Settings.Default.IsTitlebarMinified;
+            MinifyTitlebar_Toggle.IsChecked = Properties.Settings.Default.IsTitlebarMinified;
 
             // Set being on top based on settings
             Topmost = Properties.Settings.Default.IsOnTop;
+            KeepOnTop_Toggle.IsChecked = Topmost;
 
             // Set volume
             Player.Volume = (int)Properties.Settings.Default.Volume;
             VolumeSlider.Value = Properties.Settings.Default.Volume;
+
+            // Set compact progress bar opacity
+            CompactProgressBar.Opacity = Properties.Settings.Default.CompactProgressBarOpacity;
 
             // Check if a file is being opened through shell extension and play is if so
             var args = Environment.GetCommandLineArgs();
@@ -139,19 +147,13 @@ namespace FramelessPlayer
             Tuple<AppTheme, Accent> completeTheme = ThemeManager.DetectAppStyle(Application.Current);
             string theme = "";
 
-            if (darkmodeIconToggle)
+            if (!(bool)DarkMode_Toggle.IsChecked)
             {
                 theme = "BaseLight";
-
-                darkmodeIconToggle = false;
-                DarkMode_Icon.Kind = MahApps.Metro.IconPacks.PackIconFontAwesomeKind.SunRegular;
             }
             else
             {
                 theme = "BaseDark";
-
-                darkmodeIconToggle = true;
-                DarkMode_Icon.Kind = MahApps.Metro.IconPacks.PackIconFontAwesomeKind.MoonRegular;
             }
 
             // Apply chosen theme
@@ -166,18 +168,7 @@ namespace FramelessPlayer
         // Handle being on top switch
         private void KeepOnTop_Toggle_Click(object sender, RoutedEventArgs e)
         {
-            if (Topmost)
-            {
-                Topmost = false;
-                icoKeepOnTop.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.ArrangeBringForward;
-                KeepOnTop_Toggle.ToolTip = "Currently window doesn't stay on top";
-            }
-            else
-            {
-                Topmost = true;
-                icoKeepOnTop.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.ArrangeSendBackward;
-                KeepOnTop_Toggle.ToolTip = "Currently window stays on top";
-            }
+            Topmost = (bool)KeepOnTop_Toggle.IsChecked;
 
             Properties.Settings.Default.IsOnTop = Topmost;
         }
@@ -185,21 +176,31 @@ namespace FramelessPlayer
         // Handle titlebar minification switch
         private void MinifyTitlebar_Toggle_Click(object sender, RoutedEventArgs e)
         {
-            if (ShowTitleBar)
+            if ((bool)MinifyTitlebar_Toggle.IsChecked)
             {
-                ShowTitleBar = false;
                 LayoutParent.Margin = new Thickness(0, -30, 0, 0);
                 this.Height -= 30;
-                //this.Top -= 30;
             }
             else
             {
-                ShowTitleBar = true;
                 LayoutParent.Margin = new Thickness(0, 0, 0, 0);
                 this.Height += 30;
-                //this.Top += 30;
             }
-           
+
+            ShowTitleBar = !ShowTitleBar;
+            MinifyTitlebar_Toggle.IsChecked = !ShowTitleBar;
+            Properties.Settings.Default.IsTitlebarMinified = !ShowTitleBar;
+
+        }
+
+        // Handle compact progress bar opacity
+        private void CompactProgressOpacity_Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            try{
+                CompactProgressBar.Opacity = e.NewValue;
+            }catch{}
+
+            Properties.Settings.Default.CompactProgressBarOpacity = e.NewValue;
         }
 
         #region --- Cleanup ---
@@ -342,13 +343,19 @@ namespace FramelessPlayer
         private void grVideoControls_MouseEnter(object sender, MouseEventArgs e)
         {
             if (isPlaying)
+            {
                 grVideoControls.Opacity = 0.8;
+                CompactProgressBar.Opacity = 0.0;
+            }
         }
 
         private void grVideoControls_MouseLeave(object sender, MouseEventArgs e)
         {
             if (isPlaying)
+            {
                 grVideoControls.Opacity = 0.0;
+                CompactProgressBar.Opacity = Properties.Settings.Default.CompactProgressBarOpacity;
+            }
         }
 
         #endregion --- Controls opacity ---
@@ -382,12 +389,24 @@ namespace FramelessPlayer
         }
 
         // Handle video progress
-        private void Player_TimeChanged(object sender, EventArgs e)
+        async Task DndDelay()
+        {
+            await Task.Delay(1000);
+        }
+
+        private async void Player_TimeChanged(object sender, EventArgs e)
         {
             string currentTime = Player.Time.ToString(@"hh\:mm\:ss");
             string totalTime = Player.VlcMediaPlayer.Media.Duration.ToString(@"hh\:mm\:ss");
 
             VideoTime.Text = currentTime + "/" + totalTime;
+
+            await DndDelay();
+            // Show d'n'd overlay
+            if (currentTime == totalTime)
+            {
+                DragDropArea.Visibility = Visibility.Visible;
+            }
         }
 
         // Handle volume change
@@ -403,5 +422,6 @@ namespace FramelessPlayer
             // Save all settings changes
             Properties.Settings.Default.Save();
         }
+
     }
 }
