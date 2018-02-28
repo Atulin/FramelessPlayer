@@ -7,6 +7,8 @@
                       xmlns:wpf="clr-namespace:Meta.Vlc.Wpf;assembly=Meta.Vlc.Wpf"
                       xmlns:system="clr-namespace:System;assembly=mscorlib"
                       
+                      xmlns:local="clr-namespace:FramelessPlayer"
+                      
                       Title="Frameless Player ▶"
                       
                       SaveWindowPosition="True"
@@ -15,13 +17,17 @@
                       WindowState="Normal"
                       
                       Closed="MetroWindow_Closed"
+                      KeyDown="MetroWindow_KeyDown"
                                                                   
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       EnableDWMDropShadow="False"
                       
                       Height="750" Width="1280"
                       MinHeight="380" MinWidth="640">
-
+    <!-- Window resources -->
+    <Window.Resources>
+        <local:PlaylistManager x:Key="Playlist"></local:PlaylistManager>
+    </Window.Resources>
 
     <!--Window commands-->
     <Controls:MetroWindow.LeftWindowCommands>
@@ -116,7 +122,26 @@
                 </Grid>
             </Controls:Flyout>
 
-
+            <Controls:Flyout Name="Playlist_Flyout"
+                             Header="Playlist"
+                             Theme="Adapt"
+                             Position="Right"
+                             Width="400"
+                             CloseButtonVisibility="Collapsed"
+                             IsOpen="False"
+                             BorderBrush="#E5838383" BorderThickness="0,0,1,0">
+                
+                <DataGrid ItemsSource="{Binding PublicPlaylist}"
+                          DataContext="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                          AutoGenerateColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Files" Binding="{Binding Name}"></DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+                
+            </Controls:Flyout>
+            
+            
         </Controls:FlyoutsControl>
     </Controls:MetroWindow.Flyouts>
 
@@ -200,16 +225,28 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
-            <!-- Fullscreen -->
-            <Button Name="btnFullscreen"
+            <StackPanel Orientation="Horizontal"
+                        Margin="5,-2,0,0" HorizontalAlignment="Left">
+                
+                <!-- Fullscreen -->
+                <Button Name="btnFullscreen"
                     Click="btnFullscreen_Click"
                     ToolTip="Fullscreen"
                     Style="{DynamicResource MetroCircleButtonStyle}"
-                    Width="36" Height="36"
-                    Margin="-2,-2,0,0" HorizontalAlignment="Left">
-                <iconPacks:PackIconMaterial Name="icoFullscreen" Kind="Fullscreen" />
-            </Button>
-            
+                    Width="36" Height="36">
+                    <iconPacks:PackIconMaterial Name="icoFullscreen" Kind="Fullscreen" />
+                </Button>
+                
+                <!-- Playlist -->
+                <Button Name="btnPlaylist"
+                    Click="btnPlaylist_Click"
+                    ToolTip="Open playlist panel"
+                    Style="{DynamicResource MetroCircleButtonStyle}"
+                    Width="36" Height="36">
+                    <iconPacks:PackIconMaterial Kind="ViewList" />
+                </Button>
+            </StackPanel>
+
             <!-- Main controls -->
             <Button Name="btnPlay"
                     Grid.Column="1" Click="Play_Click" 

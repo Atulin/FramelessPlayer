@@ -20,6 +20,7 @@ using MahApps.Metro;
 using MahApps.Metro.Controls;
 using Microsoft.Win32;
 using Meta.Vlc.Wpf;
+using System.Collections.ObjectModel;
 
 namespace FramelessPlayer
 {
@@ -34,6 +35,12 @@ namespace FramelessPlayer
         private bool isStopped = false;
 
         public TimeSpan videoDuration = new TimeSpan();
+
+        ObservableCollection<File> Playlist = new ObservableCollection<File>();
+        public ObservableCollection<File> PublicPlaylist
+        {
+            get { return this.Playlist; }
+        }
 
         public MainWindow()
         {
@@ -75,6 +82,7 @@ namespace FramelessPlayer
 
             // Set compact progress bar opacity
             CompactProgressBar.Opacity = Properties.Settings.Default.CompactProgressBarOpacity;
+            CompactProgressOpacity_Slider.Value = Properties.Settings.Default.CompactProgressBarOpacity;
 
             // Check if a file is being opened through shell extension and play is if so
             var args = Environment.GetCommandLineArgs();
@@ -198,9 +206,10 @@ namespace FramelessPlayer
         {
             try{
                 CompactProgressBar.Opacity = e.NewValue;
-            }catch{}
+                Properties.Settings.Default.CompactProgressBarOpacity = e.NewValue;
+            }
+            catch{}
 
-            Properties.Settings.Default.CompactProgressBarOpacity = e.NewValue;
         }
 
         #region --- Cleanup ---
@@ -304,19 +313,17 @@ namespace FramelessPlayer
         {
             if (isFullscreen)
             {
-                ResizeMode = ResizeMode.CanResize;
-                WindowState = WindowState.Normal;
                 LeftWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Always;
                 RightWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Always;
                 WindowButtonCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Always;
+                WindowState = WindowState.Normal;
             }
             else
             {
-                ResizeMode = ResizeMode.NoResize;
-                WindowState = WindowState.Maximized;
                 LeftWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Never;
                 RightWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Never;
                 WindowButtonCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Never;
+                WindowState = WindowState.Maximized;
             }
 
             isFullscreen = !isFullscreen;
@@ -324,6 +331,12 @@ namespace FramelessPlayer
             ShowTitleBar = !isFullscreen;
             IgnoreTaskbarOnMaximize = isFullscreen;
             
+        }
+
+        // Handle playlist opening
+        private void btnPlaylist_Click(object sender, RoutedEventArgs e)
+        {
+            Playlist_Flyout.IsOpen = !Playlist_Flyout.IsOpen;
         }
 
         #endregion --- Events ---
@@ -385,14 +398,22 @@ namespace FramelessPlayer
 
                 // Remove d'n'd overlay
                 DragDropArea.Visibility = Visibility.Collapsed;
+
+                Playlist.Clear();
+                foreach (var v in files)
+                {
+                    Playlist.Add(new File(v));
+                }
+                
             }
         }
 
         // Handle video progress
         async Task DndDelay()
         {
-            await Task.Delay(1000);
+            await Task.Delay(3000);
         }
+
 
         private async void Player_TimeChanged(object sender, EventArgs e)
         {
@@ -403,7 +424,7 @@ namespace FramelessPlayer
 
             await DndDelay();
             // Show d'n'd overlay
-            if (currentTime == totalTime)
+            if (Player.Time.TotalSeconds >= Player.VlcMediaPlayer.Media.Duration.TotalSeconds - 2)
             {
                 DragDropArea.Visibility = Visibility.Visible;
             }
@@ -423,5 +444,31 @@ namespace FramelessPlayer
             Properties.Settings.Default.Save();
         }
 
+        // Handle keyboard key presses
+        private void MetroWindow_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.Key)
+            {
+                case Key.Space:
+                    Play_Click(sender, new RoutedEventArgs());
+                    break;
+                case Key.F:
+                    btnFullscreen_Click(sender, new RoutedEventArgs());
+                    break;
+                case Key.OemComma:
+                    Player.Volume -= 5;
+                    VolumeSlider.Value -= 5;
+                    break;
+                case Key.OemPeriod:
+                    Player.Volume += 5;
+                    VolumeSlider.Value += 5;
+                    break;
+                case Key.S:
+                    Settings_Btn_Click(sender, new RoutedEventArgs());
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }
