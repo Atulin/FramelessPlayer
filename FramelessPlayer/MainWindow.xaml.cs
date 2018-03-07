@@ -122,6 +122,9 @@ namespace FramelessPlayer
                 Settings_Flyout.IsOpen = true;
                 settingsToggle = true;
             }
+
+            // Change accent combobox focusability
+            Accent_ComboBox.Focusable = !Accent_ComboBox.Focusable;
             
         }
 
@@ -411,21 +414,20 @@ namespace FramelessPlayer
         // Handle video progress
         async Task DndDelay()
         {
-            await Task.Delay(3000);
+            await Task.Delay(2100);
         }
-
 
         private async void Player_TimeChanged(object sender, EventArgs e)
         {
             string currentTime = Player.Time.ToString(@"hh\:mm\:ss");
-            string totalTime = Player.VlcMediaPlayer.Media.Duration.ToString(@"hh\:mm\:ss");
+            string totalTime = Player.Length.ToString(@"hh\:mm\:ss");//VlcMediaPlayer.Media.Duration.ToString(@"hh\:mm\:ss");
 
             VideoTime.Text = currentTime + "/" + totalTime;
 
-            await DndDelay();
             // Show d'n'd overlay
-            if (Player.Time.TotalSeconds >= Player.VlcMediaPlayer.Media.Duration.TotalSeconds - 2)
+            if (Player.Time.TotalSeconds >= Player.Length.TotalSeconds-2)//VlcMediaPlayer.Media.Duration.TotalSeconds - 2)
             {
+                await DndDelay();
                 DragDropArea.Visibility = Visibility.Visible;
             }
         }
@@ -470,5 +472,6 @@ namespace FramelessPlayer
                     break;
             }
         }
+
     }
 }

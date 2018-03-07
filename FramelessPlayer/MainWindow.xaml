@@ -74,6 +74,7 @@
                     <Label>Colour</Label>
                     <ComboBox Name="Accent_ComboBox"
                               SelectionChanged="Accent_ComboBox_SelectionChanged"
+                              Focusable="False"
                               Grid.Column="1">
                     </ComboBox>
 
@@ -298,7 +299,8 @@
                          Margin="5,0,5,5" />
             <TextBlock Name="VideoTime"
                        Grid.Row="1"
-                       Margin="8,-1,0,0"></TextBlock>
+                       Margin="8,-1,0,0"
+                       IsHitTestVisible="False"></TextBlock>
         </Grid>
 
         
