@@ -18,6 +18,7 @@
                       
                       Closed="MetroWindow_Closed"
                       KeyDown="MetroWindow_KeyDown"
+                      MouseWheel="MetroWindow_MouseWheel"
                                                                   
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       EnableDWMDropShadow="False"
@@ -53,7 +54,8 @@
                              Position="Left"
                              Width="400"
                              CloseButtonVisibility="Collapsed"
-                             BorderBrush="#E5838383" BorderThickness="0,0,1,0">
+                             BorderBrush="#E5838383" BorderThickness="0,0,1,0"
+                             IsPinned="False">
                 <Grid Margin="5,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="36px"/>
@@ -113,6 +115,9 @@
                             ValueChanged="CompactProgressOpacity_Slider_ValueChanged"
                             Grid.Row="4" Grid.Column="1"></Slider>
                     
+                    <!-- Debug log -->
+                    <TextBlock Name="DebugLog" FontSize="10" FontFamily="Consolas"></TextBlock>
+                    
                     <!-- Ko-fi button -->
                     <Button Name="btnKoFi"
                             Click="btnKoFi_Click"
@@ -123,6 +128,7 @@
                 </Grid>
             </Controls:Flyout>
 
+            <!-- Playlist flyout -->
             <Controls:Flyout Name="Playlist_Flyout"
                              Header="Playlist"
                              Theme="Adapt"
@@ -130,16 +136,111 @@
                              Width="400"
                              CloseButtonVisibility="Collapsed"
                              IsOpen="False"
-                             BorderBrush="#E5838383" BorderThickness="0,0,1,0">
-                
-                <DataGrid ItemsSource="{Binding PublicPlaylist}"
+                             BorderBrush="#E5838383" BorderThickness="0,0,1,0"
+                             IsPinned="False">
+                <StackPanel>
+                    <!-- Playlist grid -->
+                    <DataGrid ItemsSource="{Binding PublicPlaylist}"
+                              DataContext="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                              AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Subtitles">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Name="Btn_LoadFile"
+                                                Click="Btn_LoadFile_Click"
+                                                Content="{Binding Name}"
+                                                Focusable="False"
+                                                BorderBrush="{x:Null}"
+                                                Background="{x:Null}" 
+                                                HorizontalAlignment="Left"></Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+
+            </Controls:Flyout>
+            
+            <!-- Tracks flyout -->
+            <Controls:Flyout Name="Tracks_Flyout"
+                             Theme="Accent"
+                             Position="Right"
+                             Height="200"
+                             CloseButtonVisibility="Collapsed"
+                             IsOpen="False"
+                             BorderBrush="#E5838383" BorderThickness="0,0,1,0"
+                             Opacity="0.5"
+                             IsPinned="False">
+                <StackPanel Orientation="Horizontal">
+                    
+                    <!-- Subtitles grid -->
+                    <DataGrid ItemsSource="{Binding PublicSubtitles}"
                           DataContext="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
-                          AutoGenerateColumns="False">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Files" Binding="{Binding Name}"></DataGridTextColumn>
-                    </DataGrid.Columns>
-                </DataGrid>
-                
+                          AutoGenerateColumns="False"
+                          Margin="0,-40,0,0">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Subtitles">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Name="Btn_ChangeSubtitles"
+                                                Click="Btn_ChangeSubtitles_Click"
+                                                Content="{Binding Name}"
+                                                Focusable="False"
+                                                BorderBrush="{x:Null}"
+                                                Background="{x:Null}" 
+                                                HorizontalAlignment="Left"></Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    
+                    <!-- Audio grid -->
+                    <DataGrid ItemsSource="{Binding PublicAudioTracks}"
+                          DataContext="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                          AutoGenerateColumns="False"
+                          Margin="0,-40,0,0">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Audio">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Name="Btn_ChangeAudioTrack"
+                                                Click="Btn_ChangeAudioTrack_Click"
+                                                Content="{Binding Name}"
+                                                Focusable="False"
+                                                BorderBrush="{x:Null}"
+                                                Background="{x:Null}"
+                                                HorizontalAlignment="Left"></Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <!-- Video grid -->
+                    <DataGrid ItemsSource="{Binding PublicVideoTracks}"
+                          DataContext="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                          AutoGenerateColumns="False"
+                          Margin="0,-40,0,0">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Video">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Name="Btn_ChangeVideoTrack"
+                                                Click="Btn_ChangeVideoTrack_Click"
+                                                Content="{Binding Name}"
+                                                Focusable="False"
+                                                BorderBrush="{x:Null}"
+                                                Background="{x:Null}"
+                                                HorizontalAlignment="Left"></Button>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
             </Controls:Flyout>
             
             
@@ -246,6 +347,15 @@
                     Width="36" Height="36">
                     <iconPacks:PackIconMaterial Kind="ViewList" />
                 </Button>
+                
+                <!-- Tracks -->
+                <Button Name="btnTracks"
+                        Click="btnTracks_Click"
+                    ToolTip="Open tracks selection panel"
+                    Style="{DynamicResource MetroCircleButtonStyle}"
+                    Width="36" Height="36">
+                    <iconPacks:PackIconModern Kind="ListGear" />
+                </Button>
             </StackPanel>
 
             <!-- Main controls -->
@@ -275,15 +385,19 @@
             </Button>
 
             <!-- Volume control -->
-            <Slider Name="VolumeSlider"
-                    Grid.Column="4" 
+            <StackPanel Orientation="Horizontal"
+                        Grid.Column="4"
+                        VerticalAlignment="Center" HorizontalAlignment="Right"
+                        Margin="0,0,10,0" >
+                <iconPacks:PackIconMaterial Name="Ico_Mute" Kind="VolumeOff" Width="30" Visibility="Hidden" />
+                
+                <Slider Name="VolumeSlider"
                     Value="{Binding Volume, ElementName=Player}" 
                     Thumb.DragCompleted="VolumeSlider_DragCompleted"
-                    VerticalAlignment="Center" HorizontalAlignment="Right"
-                    Margin="0,0,10,0"
                     Width="100"
                     Maximum="100"
                     ToolTip="Volume"/>
+            </StackPanel>
 
             <!-- Progressbar -->
             

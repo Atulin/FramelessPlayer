@@ -36,10 +36,32 @@ namespace FramelessPlayer
 
         public TimeSpan videoDuration = new TimeSpan();
 
+        // Playlist collection
         ObservableCollection<File> Playlist = new ObservableCollection<File>();
         public ObservableCollection<File> PublicPlaylist
         {
             get { return this.Playlist; }
+        }
+
+        // Subtitles collection
+        ObservableCollection<Meta.Vlc.TrackDescription> Subtitles = new ObservableCollection<Meta.Vlc.TrackDescription>();
+        public ObservableCollection<Meta.Vlc.TrackDescription> PublicSubtitles
+        {
+            get { return this.Subtitles; }
+        }
+
+        // Audio tracks collection
+        ObservableCollection<Meta.Vlc.TrackDescription> AudioTracks = new ObservableCollection<Meta.Vlc.TrackDescription>();
+        public ObservableCollection<Meta.Vlc.TrackDescription> PublicAudioTracks
+        {
+            get { return this.AudioTracks; }
+        }
+
+        // Video tracks collection
+        ObservableCollection<Meta.Vlc.TrackDescription> VideoTracks = new ObservableCollection<Meta.Vlc.TrackDescription>();
+        public ObservableCollection<Meta.Vlc.TrackDescription> PublicVideoTracks
+        {
+            get { return this.VideoTracks; }
         }
 
         public MainWindow()
@@ -468,10 +490,116 @@ namespace FramelessPlayer
                 case Key.S:
                     Settings_Btn_Click(sender, new RoutedEventArgs());
                     break;
+                case Key.M:
+                    Player.IsMute = !Player.IsMute;
+                    if (Player.IsMute)
+                        Ico_Mute.Visibility = Visibility.Visible;
+                    else
+                        Ico_Mute.Visibility = Visibility.Hidden;
+                    break;
+                case Key.D:
+                    break;
                 default:
                     break;
             }
         }
 
+        // Handle mousewheel scroll
+        private void MetroWindow_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (e.Delta > 0)
+            {
+                Player.Volume++;
+            }
+            else if (e.Delta < 0)
+            {
+                Player.Volume--;
+            }
+        }
+
+        // Change subtitles
+        private void Btn_ChangeSubtitles_Click(object sender, RoutedEventArgs e)
+        {
+            Meta.Vlc.TrackDescription td = ((FrameworkElement)sender).DataContext as Meta.Vlc.TrackDescription;
+            Player.VlcMediaPlayer.Subtitle = td.Id;
+        }
+
+        // Change audio track
+        private void Btn_ChangeAudioTrack_Click(object sender, RoutedEventArgs e)
+        {
+            Meta.Vlc.TrackDescription td = ((FrameworkElement)sender).DataContext as Meta.Vlc.TrackDescription;
+            Player.VlcMediaPlayer.AudioTrack = td.Id;
+        }
+
+        // Change video track
+        private void Btn_ChangeVideoTrack_Click(object sender, RoutedEventArgs e)
+        {
+
+            Meta.Vlc.TrackDescription td = ((FrameworkElement)sender).DataContext as Meta.Vlc.TrackDescription;
+            Player.VlcMediaPlayer.VideoTrack = td.Id;
+        }
+
+        //Open track selection
+        private void btnTracks_Click(object sender, RoutedEventArgs e)
+        {
+            //Subs
+            Subtitles.Clear();
+            AudioTracks.Clear();
+
+            GetAllTracks();
+
+            Tracks_Flyout.IsOpen = !Tracks_Flyout.IsOpen;
+        }
+
+
+
+        // Open file from playlist
+        private void Btn_LoadFile_Click(object sender, RoutedEventArgs e)
+        {
+            File file = ((FrameworkElement)sender).DataContext as File;
+
+            Player.Stop();
+            Player.LoadMedia(file.Path);
+            Player.Play();
+
+            isPlaying = true;
+            icoPlayPause.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.Pause;
+            btnPlay.ToolTip = "Pause";
+
+            grVideoControls.Opacity = 0.0;
+
+            // Remove d'n'd overlay
+            DragDropArea.Visibility = Visibility.Collapsed;
+        }
+
+
+
+
+
+        // Load all tracks
+        public void GetAllTracks()
+        {
+            // Grab subtitles
+            foreach (var v in Player.VlcMediaPlayer.SubtitleDescription)
+            {
+                Subtitles.Add(v);
+                DebugLog.Text += v.Name + " [" + v.Id + "]" + Environment.NewLine;
+            }
+
+            // Grab audio tracks
+            foreach (var v in Player.VlcMediaPlayer.AudioTrackDescription)
+            {
+                AudioTracks.Add(v);
+                DebugLog.Text += v.Name + " [" + v.Id + "]" + Environment.NewLine;
+            }
+
+            // Grab video tracks
+            foreach (var v in Player.VlcMediaPlayer.VideoTrackDescription)
+            {
+                VideoTracks.Add(v);
+                DebugLog.Text += v.Name + " [" + v.Id + "]" + Environment.NewLine;
+            }
+
+        }
     }
 }
