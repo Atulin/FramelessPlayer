@@ -5,5 +5,5 @@ SImple frameless media player in WPF, to play videos on top of anything
  - *Space* - play and pause
  - *F* - toggle fullscreen
  - *S* - toggle settings panel
- – *M* – mute sound
+ - *M* – mute sound
  - *<* and *>* - change volume
