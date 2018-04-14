@@ -19,6 +19,7 @@
                       Closed="MetroWindow_Closed"
                       KeyDown="MetroWindow_KeyDown"
                       MouseWheel="MetroWindow_MouseWheel"
+                      MouseMove="MetroWindow_MouseMove"
                                                                   
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       EnableDWMDropShadow="False"
@@ -271,6 +272,7 @@
                        LibVlcPath="libvlc"
                        EndBehavior="Stop"
                        TimeChanged="Player_TimeChanged"
+                       StateChanged="Player_StateChanged"
                        Stretch="Uniform"/>
 
         <!-- Micro progress bar -->
@@ -389,14 +391,14 @@
                         Grid.Column="4"
                         VerticalAlignment="Center" HorizontalAlignment="Right"
                         Margin="0,0,10,0" >
-                <iconPacks:PackIconMaterial Name="Ico_Mute" Kind="VolumeOff" Width="30" Visibility="Hidden" />
+                <iconPacks:PackIconMaterial Name="Ico_Sound" Kind="VolumeOff" Width="30" Visibility="Visible"/>
                 
                 <Slider Name="VolumeSlider"
-                    Value="{Binding Volume, ElementName=Player}" 
-                    Thumb.DragCompleted="VolumeSlider_DragCompleted"
-                    Width="100"
-                    Maximum="100"
-                    ToolTip="Volume"/>
+                        Value="{Binding Volume, ElementName=Player}" 
+                        Thumb.DragCompleted="VolumeSlider_DragCompleted"
+                        Width="120"
+                        Maximum="120"
+                        ToolTip="Volume"/>
             </StackPanel>
 
             <!-- Progressbar -->
@@ -417,7 +419,37 @@
                        IsHitTestVisible="False"></TextBlock>
         </Grid>
 
-        
+
+        <!-- Volume overlay -->
+        <Grid Name="VolumeOverlay"
+              HorizontalAlignment="Right"
+              Grid.Row="0"
+              Margin="32,32,32,32"
+              VerticalAlignment="Stretch"
+              Width="112"
+              Background="#3F000000"
+              Visibility="Hidden">
+
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+
+            <Controls:MetroProgressBar Name="VolumeOverlay_bar"
+                                       Grid.Row="0"
+                                       MinWidth="20"
+                                       Margin="0,16,0,16"
+                                       Orientation="Vertical"
+                                       Value="100" 
+                                       HorizontalAlignment="Center"
+                                       BorderBrush="Black" BorderThickness="10,10,10,10"/>
+            <TextBlock Name="VolumeOverlay_txt"
+                       Grid.Row="1"
+                       HorizontalAlignment="Center"
+                       FontSize="24" FontWeight="Bold"
+                       Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}">100</TextBlock>
+        </Grid>
+
     </Grid>
 
 </Controls:MetroWindow>

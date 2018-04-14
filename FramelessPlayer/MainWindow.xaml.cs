@@ -29,12 +29,22 @@ namespace FramelessPlayer
     /// </summary>
     public partial class MainWindow : MetroWindow
     {
+        // Settings toggle bool
         private bool settingsToggle = false;
 
+        // Player state bools
         private bool isPlaying = false;
         private bool isStopped = false;
-
+        
+        // Video duration
         public TimeSpan videoDuration = new TimeSpan();
+
+        // Timer for volume overlay
+        DispatcherTimer volTimer;
+        float volScrollDelta = 0;
+
+        // Timer for mouse hide
+        DispatcherTimer mouseTimer;
 
         // Playlist collection
         ObservableCollection<File> Playlist = new ObservableCollection<File>();
@@ -102,9 +112,25 @@ namespace FramelessPlayer
             Player.Volume = (int)Properties.Settings.Default.Volume;
             VolumeSlider.Value = Properties.Settings.Default.Volume;
 
+            VolumeOverlay_bar.Value = (int)Properties.Settings.Default.Volume;
+            VolumeOverlay_txt.Text = Properties.Settings.Default.Volume.ToString();
+
             // Set compact progress bar opacity
             CompactProgressBar.Opacity = Properties.Settings.Default.CompactProgressBarOpacity;
             CompactProgressOpacity_Slider.Value = Properties.Settings.Default.CompactProgressBarOpacity;
+
+            // Set volume overlay timer
+            volTimer = new DispatcherTimer();
+            volTimer.Tick += VolTimer_Tick;
+            volTimer.Interval = TimeSpan.FromMilliseconds(500 /*Adjust the interval*/);
+
+            MouseWheel += MetroWindow_MouseWheel;
+
+            // Set mouse hide timer
+            mouseTimer = new DispatcherTimer();
+            mouseTimer.Tick += HideMouseTimer_Tick;
+            mouseTimer.Interval = TimeSpan.FromMilliseconds(500 /*Adjust the interval*/);
+
 
             // Check if a file is being opened through shell extension and play is if so
             var args = Environment.GetCommandLineArgs();
@@ -433,24 +459,22 @@ namespace FramelessPlayer
             }
         }
 
-        // Handle video progress
-        async Task DndDelay()
-        {
-            await Task.Delay(2100);
-        }
-
-        private async void Player_TimeChanged(object sender, EventArgs e)
+        // Handle time change
+        private void Player_TimeChanged(object sender, EventArgs e)
         {
             string currentTime = Player.Time.ToString(@"hh\:mm\:ss");
-            string totalTime = Player.Length.ToString(@"hh\:mm\:ss");//VlcMediaPlayer.Media.Duration.ToString(@"hh\:mm\:ss");
+            string totalTime = Player.Length.ToString(@"hh\:mm\:ss");
 
             VideoTime.Text = currentTime + "/" + totalTime;
+        }
 
-            // Show d'n'd overlay
-            if (Player.Time.TotalSeconds >= Player.Length.TotalSeconds-2)//VlcMediaPlayer.Media.Duration.TotalSeconds - 2)
+        // Handle state change
+        private void Player_StateChanged(object sender, Meta.Vlc.ObjectEventArgs<Meta.Vlc.Interop.Media.MediaState> e)
+        {
+            if (e.Value == Meta.Vlc.Interop.Media.MediaState.Ended)
             {
-                await DndDelay();
                 DragDropArea.Visibility = Visibility.Visible;
+                Player.Stop();
             }
         }
 
@@ -459,7 +483,49 @@ namespace FramelessPlayer
         {
             Properties.Settings.Default.Volume = VolumeSlider.Value;
             Properties.Settings.Default.Save();
+
+            VolumeOverlay_bar.Value = Player.Volume;
+            VolumeOverlay_txt.Text = Player.Volume.ToString();
+
+            ShowVolumeChange();
         }
+
+        // Change volume with scrollwheel
+        void VolTimer_Tick(object sender, EventArgs e)
+        {
+            //Prevent timer from looping
+            (sender as DispatcherTimer).Stop();
+
+            //Perform some action
+            VolumeOverlay.Visibility = Visibility.Hidden;
+
+            //Reset for futher scrolling
+            volScrollDelta = 0;
+        }
+
+        private void MetroWindow_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            VolumeOverlay.Visibility = Visibility.Visible;
+
+
+            if (e.Delta > 0 && Player.Volume < 120)
+            {
+                Player.Volume++;
+            }
+            else if (e.Delta < 0 && Player.Volume > 0)
+            {
+                Player.Volume--;
+            }
+
+            ShowVolumeChange();
+
+            // Use the timer
+            volScrollDelta += e.Delta;
+
+            volTimer.Stop();
+            volTimer.Start();
+        }
+
 
         // Handle app closed
         private void MetroWindow_Closed(object sender, EventArgs e)
@@ -493,9 +559,9 @@ namespace FramelessPlayer
                 case Key.M:
                     Player.IsMute = !Player.IsMute;
                     if (Player.IsMute)
-                        Ico_Mute.Visibility = Visibility.Visible;
+                        Ico_Sound.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.VolumeOff;
                     else
-                        Ico_Mute.Visibility = Visibility.Hidden;
+                        Ico_Sound.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.VolumeMedium;
                     break;
                 case Key.D:
                     break;
@@ -504,18 +570,6 @@ namespace FramelessPlayer
             }
         }
 
-        // Handle mousewheel scroll
-        private void MetroWindow_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            if (e.Delta > 0)
-            {
-                Player.Volume++;
-            }
-            else if (e.Delta < 0)
-            {
-                Player.Volume--;
-            }
-        }
 
         // Change subtitles
         private void Btn_ChangeSubtitles_Click(object sender, RoutedEventArgs e)
@@ -534,7 +588,6 @@ namespace FramelessPlayer
         // Change video track
         private void Btn_ChangeVideoTrack_Click(object sender, RoutedEventArgs e)
         {
-
             Meta.Vlc.TrackDescription td = ((FrameworkElement)sender).DataContext as Meta.Vlc.TrackDescription;
             Player.VlcMediaPlayer.VideoTrack = td.Id;
         }
@@ -601,5 +654,68 @@ namespace FramelessPlayer
             }
 
         }
+
+        // Hide mouse cursor
+        void HideMouseTimer_Tick(object sender, EventArgs e)
+        {
+            //Prevent timer from looping
+            (sender as DispatcherTimer).Stop();
+
+            //Perform some action
+            if (Player.State == Meta.Vlc.Interop.Media.MediaState.Playing)
+            {
+                Mouse.OverrideCursor = Cursors.None;
+            }
+
+            //Reset for futher scrolling
+            volScrollDelta = 0;
+        }
+
+        private void MetroWindow_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (Player.State == Meta.Vlc.Interop.Media.MediaState.Playing)
+            {
+                Mouse.OverrideCursor = Cursors.Arrow;
+
+                mouseTimer.Stop();
+                mouseTimer.Start();
+            }
+        }
+
+
+
+
+        ///
+        /// HELPER METHODS
+        ///
+        public void ShowVolumeChange()
+        {
+            if (Player.Volume > 100)
+            {
+                Ico_Sound.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.VolumeHigh;
+                Ico_Sound.Foreground = new SolidColorBrush(Colors.OrangeRed);
+                VolumeOverlay_txt.Foreground = new SolidColorBrush(Colors.OrangeRed);
+            }
+            else if (Player.Volume == 0)
+            {
+                Ico_Sound.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.VolumeOff;
+                Ico_Sound.Foreground = new SolidColorBrush(Colors.LightGray);
+                VolumeOverlay_txt.Foreground = new SolidColorBrush(Colors.LightGray);
+            }
+            else
+            {
+                Ico_Sound.Kind = MahApps.Metro.IconPacks.PackIconMaterialKind.VolumeMedium;
+                Ico_Sound.Foreground = new SolidColorBrush(Colors.White);
+                VolumeOverlay_txt.Foreground = new SolidColorBrush(Colors.White);
+            }
+
+            VolumeOverlay_bar.Value = Player.Volume;
+            VolumeOverlay_txt.Text = Player.Volume.ToString();
+
+            Properties.Settings.Default.Volume = VolumeSlider.Value;
+            Properties.Settings.Default.Save();
+        }
+
     }
+
 }
