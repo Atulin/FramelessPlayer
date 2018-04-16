@@ -55,8 +55,7 @@
                              Position="Left"
                              Width="400"
                              CloseButtonVisibility="Collapsed"
-                             BorderBrush="#E5838383" BorderThickness="0,0,1,0"
-                             IsPinned="False">
+                             BorderBrush="#E5838383" BorderThickness="0,0,1,0">
                 <Grid Margin="5,0">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="36px"/>
@@ -115,10 +114,10 @@
                             Maximum="1" Minimum="0"
                             ValueChanged="CompactProgressOpacity_Slider_ValueChanged"
                             Grid.Row="4" Grid.Column="1"></Slider>
-                    
+
                     <!-- Debug log -->
                     <TextBlock Name="DebugLog" FontSize="10" FontFamily="Consolas"></TextBlock>
-                    
+
                     <!-- Ko-fi button -->
                     <Button Name="btnKoFi"
                             Click="btnKoFi_Click"
@@ -137,8 +136,7 @@
                              Width="400"
                              CloseButtonVisibility="Collapsed"
                              IsOpen="False"
-                             BorderBrush="#E5838383" BorderThickness="0,0,1,0"
-                             IsPinned="False">
+                             BorderBrush="#E5838383" BorderThickness="0,0,1,0">
                 <StackPanel>
                     <!-- Playlist grid -->
                     <DataGrid ItemsSource="{Binding PublicPlaylist}"
@@ -163,7 +161,7 @@
                 </StackPanel>
 
             </Controls:Flyout>
-            
+
             <!-- Tracks flyout -->
             <Controls:Flyout Name="Tracks_Flyout"
                              Theme="Accent"
@@ -172,10 +170,9 @@
                              CloseButtonVisibility="Collapsed"
                              IsOpen="False"
                              BorderBrush="#E5838383" BorderThickness="0,0,1,0"
-                             Opacity="0.5"
-                             IsPinned="False">
+                             Opacity="0.5">
                 <StackPanel Orientation="Horizontal">
-                    
+
                     <!-- Subtitles grid -->
                     <DataGrid ItemsSource="{Binding PublicSubtitles}"
                           DataContext="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
@@ -197,7 +194,7 @@
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    
+
                     <!-- Audio grid -->
                     <DataGrid ItemsSource="{Binding PublicAudioTracks}"
                           DataContext="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
@@ -243,8 +240,8 @@
                     </DataGrid>
                 </StackPanel>
             </Controls:Flyout>
-            
-            
+
+
         </Controls:FlyoutsControl>
     </Controls:MetroWindow.Flyouts>
 
@@ -309,13 +306,14 @@
             <TextBlock Text="Drag your file here" FontSize="50" FontWeight="Bold" Foreground="#7F808080" TextAlignment="Center" Grid.Row="2"></TextBlock>
 
         </Grid>
-        
+
         <Grid x:Name="grVideoControls"
               Grid.Row="1"
-              Opacity="0.8"
               MouseEnter="grVideoControls_MouseEnter"
               MouseLeave="grVideoControls_MouseLeave"
-              Background="{DynamicResource AccentColorBrush}">
+              Background="{DynamicResource AccentColorBrush}"
+              Height="40"
+              Margin="0,0,0,-10">
             <Grid.RowDefinitions>
                 <RowDefinition/>
                 <RowDefinition Height="20"/>
@@ -330,32 +328,47 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Orientation="Horizontal"
-                        Margin="5,-2,0,0" HorizontalAlignment="Left">
-                
+                        Margin="5,-16,0,0" HorizontalAlignment="Left">
+
                 <!-- Fullscreen -->
                 <Button Name="btnFullscreen"
                     Click="btnFullscreen_Click"
                     ToolTip="Fullscreen"
                     Style="{DynamicResource MetroCircleButtonStyle}"
+                    Background="{DynamicResource AccentColorBrush}"
+                    BorderBrush="{x:Null}"
                     Width="36" Height="36">
+                    <Button.Effect>
+                        <DropShadowEffect ShadowDepth="0" Direction="0"/>
+                    </Button.Effect>
                     <iconPacks:PackIconMaterial Name="icoFullscreen" Kind="Fullscreen" />
                 </Button>
-                
+
                 <!-- Playlist -->
                 <Button Name="btnPlaylist"
                     Click="btnPlaylist_Click"
                     ToolTip="Open playlist panel"
                     Style="{DynamicResource MetroCircleButtonStyle}"
+                    Background="{DynamicResource AccentColorBrush}"
+                    BorderBrush="{x:Null}"
                     Width="36" Height="36">
+                    <Button.Effect>
+                        <DropShadowEffect ShadowDepth="0" Direction="0"/>
+                    </Button.Effect>
                     <iconPacks:PackIconMaterial Kind="ViewList" />
                 </Button>
-                
+
                 <!-- Tracks -->
                 <Button Name="btnTracks"
                         Click="btnTracks_Click"
-                    ToolTip="Open tracks selection panel"
-                    Style="{DynamicResource MetroCircleButtonStyle}"
-                    Width="36" Height="36">
+                        ToolTip="Open tracks selection panel"
+                        Style="{DynamicResource MetroCircleButtonStyle}"
+                        Background="{DynamicResource AccentColorBrush}"
+                        BorderBrush="{x:Null}"
+                        Width="36" Height="36">
+                    <Button.Effect>
+                        <DropShadowEffect ShadowDepth="0" Direction="0"/>
+                    </Button.Effect>
                     <iconPacks:PackIconModern Kind="ListGear" />
                 </Button>
             </StackPanel>
@@ -365,24 +378,39 @@
                     Grid.Column="1" Click="Play_Click" 
                     ToolTip="Play"
                     Style="{DynamicResource MetroCircleButtonStyle}"
+                    Background="{DynamicResource AccentColorBrush}"
+                    BorderBrush="{x:Null}"
                     Width="36" Height="36"
-                    Margin="-2,-2,0,0">
+                    Margin="-2,-16,0,0">
+                <Button.Effect>
+                    <DropShadowEffect ShadowDepth="0" Direction="0"/>
+                </Button.Effect>
                 <iconPacks:PackIconMaterial Name="icoPlayPause" Kind="Play" />
             </Button>
 
             <Button Grid.Column="2" Click="Stop_Click"
                     ToolTip="Stop"
                     Style="{DynamicResource MetroCircleButtonStyle}"
+                    Background="{DynamicResource AccentColorBrush}"
+                    BorderBrush="{x:Null}"
                     Width="36" Height="36"
-                    Margin="-2,-2,0,0">
+                    Margin="-2,-16,0,0">
+                <Button.Effect>
+                    <DropShadowEffect ShadowDepth="0" Direction="0"/>
+                </Button.Effect>
                 <iconPacks:PackIconMaterial Kind="Stop" />
             </Button>
 
             <Button Grid.Column="3" Click="Load_Click"
                     ToolTip="Load file"
                     Style="{DynamicResource MetroCircleButtonStyle}"
+                    Background="{DynamicResource AccentColorBrush}"
+                    BorderBrush="{x:Null}"
                     Width="36" Height="36"
-                    Margin="-2,-2,0,0">
+                    Margin="-2,-16,0,0">
+                <Button.Effect>
+                    <DropShadowEffect ShadowDepth="0" Direction="0"/>
+                </Button.Effect>
                 <iconPacks:PackIconMaterial Kind="OpenInApp" />
             </Button>
 
@@ -390,19 +418,29 @@
             <StackPanel Orientation="Horizontal"
                         Grid.Column="4"
                         VerticalAlignment="Center" HorizontalAlignment="Right"
-                        Margin="0,0,10,0" >
-                <iconPacks:PackIconMaterial Name="Ico_Sound" Kind="VolumeOff" Width="30" Visibility="Visible"/>
-                
+                        Margin="0,0,10,0" Height="16" >
+                <iconPacks:PackIconMaterial Name="Ico_Sound" Kind="VolumeOff" Width="22" Height="14" Visibility="Visible" VerticalAlignment="Center"/>
+
                 <Slider Name="VolumeSlider"
                         Value="{Binding Volume, ElementName=Player}" 
                         Thumb.DragCompleted="VolumeSlider_DragCompleted"
                         Width="120"
+                        Height="16"
                         Maximum="120"
-                        ToolTip="Volume"/>
+                        ToolTip="Volume" RenderTransformOrigin="0.5,0.5">
+                    <Slider.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleY="0.8"/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Slider.RenderTransform>
+                </Slider>
             </StackPanel>
 
             <!-- Progressbar -->
-            
+
             <ProgressBar x:Name="VideoProgressBar"
                          Grid.Row="1"
                          Grid.ColumnSpan="5"
@@ -449,6 +487,22 @@
                        FontSize="24" FontWeight="Bold"
                        Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}">100</TextBlock>
         </Grid>
+        
+        <!-- Fullscreen close button-->
+        <Button Name="FullscreenClose_Btn"
+                Grid.Column="1" Click="FullscreenClose_Btn_Click" 
+                ToolTip="Exit"
+                Style="{DynamicResource MetroCircleButtonStyle}"
+                Background="{DynamicResource AccentColorBrush}"
+                BorderBrush="{x:Null}"
+                Width="36" Height="36"
+                HorizontalAlignment="Right" VerticalAlignment="Top"
+                Visibility="Collapsed">
+            <Button.Effect>
+                <DropShadowEffect ShadowDepth="0" Direction="0"/>
+            </Button.Effect>
+            <iconPacks:PackIconMaterial Kind="Close" />
+        </Button>
 
     </Grid>
 

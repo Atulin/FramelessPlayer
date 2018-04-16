@@ -367,6 +367,7 @@ namespace FramelessPlayer
                 LeftWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Always;
                 RightWindowCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Always;
                 WindowButtonCommandsOverlayBehavior = WindowCommandsOverlayBehavior.Always;
+                FullscreenClose_Btn.Visibility = Visibility.Collapsed;
                 WindowState = WindowState.Normal;
             }
             else
@@ -382,6 +383,12 @@ namespace FramelessPlayer
             ShowTitleBar = !isFullscreen;
             IgnoreTaskbarOnMaximize = isFullscreen;
             
+        }
+
+        // Handle fullscreen close button
+        private void FullscreenClose_Btn_Click(object sender, RoutedEventArgs e)
+        {
+            Title = "Cls";
         }
 
         // Handle playlist opening
@@ -408,7 +415,7 @@ namespace FramelessPlayer
         {
             if (isPlaying)
             {
-                grVideoControls.Opacity = 0.8;
+                grVideoControls.Opacity = 1;
                 CompactProgressBar.Opacity = 0.0;
             }
         }
@@ -471,11 +478,23 @@ namespace FramelessPlayer
         // Handle state change
         private void Player_StateChanged(object sender, Meta.Vlc.ObjectEventArgs<Meta.Vlc.Interop.Media.MediaState> e)
         {
-            if (e.Value == Meta.Vlc.Interop.Media.MediaState.Ended)
+            switch (e.Value)
             {
-                DragDropArea.Visibility = Visibility.Visible;
-                Player.Stop();
+                case Meta.Vlc.Interop.Media.MediaState.Ended:
+                    DragDropArea.Visibility = Visibility.Visible;
+                    Player.Stop();
+                    break;
+
+                case Meta.Vlc.Interop.Media.MediaState.Playing:
+                    FullscreenClose_Btn.Visibility = Visibility.Collapsed;
+                    break;
+
+                default:
+                    if (isFullscreen)
+                        FullscreenClose_Btn.Visibility = Visibility.Visible;
+                    break;
             }
+                
         }
 
         // Handle volume change
