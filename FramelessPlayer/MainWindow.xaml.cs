@@ -590,6 +590,8 @@ namespace FramelessPlayer
         }
 
 
+
+
         // Change subtitles
         private void Btn_ChangeSubtitles_Click(object sender, RoutedEventArgs e)
         {
@@ -692,13 +694,13 @@ namespace FramelessPlayer
 
         private void MetroWindow_MouseMove(object sender, MouseEventArgs e)
         {
-            if (Player.State == Meta.Vlc.Interop.Media.MediaState.Playing)
-            {
+            //if (Player.State == Meta.Vlc.Interop.Media.MediaState.Playing)
+            //{
                 Mouse.OverrideCursor = Cursors.Arrow;
 
                 mouseTimer.Stop();
                 mouseTimer.Start();
-            }
+            //}
         }
 
 

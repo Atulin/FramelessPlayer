@@ -321,9 +321,9 @@
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
-                <ColumnDefinition Width="32"/>
-                <ColumnDefinition Width="32"/>
-                <ColumnDefinition Width="32"/>
+                <ColumnDefinition Width="42"/>
+                <ColumnDefinition Width="56"/>
+                <ColumnDefinition Width="42"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
@@ -374,31 +374,32 @@
             </StackPanel>
 
             <!-- Main controls -->
-            <Button Name="btnPlay"
-                    Grid.Column="1" Click="Play_Click" 
-                    ToolTip="Play"
-                    Style="{DynamicResource MetroCircleButtonStyle}"
-                    Background="{DynamicResource AccentColorBrush}"
-                    BorderBrush="{x:Null}"
-                    Width="36" Height="36"
-                    Margin="-2,-16,0,0">
-                <Button.Effect>
-                    <DropShadowEffect ShadowDepth="0" Direction="0"/>
-                </Button.Effect>
-                <iconPacks:PackIconMaterial Name="icoPlayPause" Kind="Play" />
-            </Button>
 
-            <Button Grid.Column="2" Click="Stop_Click"
+            <Button Grid.Column="1" Click="Stop_Click"
                     ToolTip="Stop"
                     Style="{DynamicResource MetroCircleButtonStyle}"
                     Background="{DynamicResource AccentColorBrush}"
                     BorderBrush="{x:Null}"
-                    Width="36" Height="36"
-                    Margin="-2,-16,0,0">
+                    Width="42" Height="42"
+                    Margin="0,-24,-8,0">
                 <Button.Effect>
                     <DropShadowEffect ShadowDepth="0" Direction="0"/>
                 </Button.Effect>
                 <iconPacks:PackIconMaterial Kind="Stop" />
+            </Button>
+            
+            <Button Name="btnPlay"
+                    Grid.Column="2" Click="Play_Click" 
+                    ToolTip="Play"
+                    Style="{DynamicResource MetroCircleButtonStyle}"
+                    Background="{DynamicResource AccentColorBrush}"
+                    BorderBrush="{x:Null}"
+                    Width="56" Height="56"
+                    Margin="0,-38,0,0">
+                <Button.Effect>
+                    <DropShadowEffect ShadowDepth="0" Direction="0"/>
+                </Button.Effect>
+                <iconPacks:PackIconMaterial Width="32" Height="32" Name="icoPlayPause" Kind="Play" />
             </Button>
 
             <Button Grid.Column="3" Click="Load_Click"
@@ -406,8 +407,8 @@
                     Style="{DynamicResource MetroCircleButtonStyle}"
                     Background="{DynamicResource AccentColorBrush}"
                     BorderBrush="{x:Null}"
-                    Width="36" Height="36"
-                    Margin="-2,-16,0,0">
+                    Width="42" Height="42"
+                    Margin="-8,-24,0,0">
                 <Button.Effect>
                     <DropShadowEffect ShadowDepth="0" Direction="0"/>
                 </Button.Effect>
