@@ -20,6 +20,7 @@
                       KeyDown="MetroWindow_KeyDown"
                       MouseWheel="MetroWindow_MouseWheel"
                       MouseMove="MetroWindow_MouseMove"
+                      PreviewMouseDown="MetroWindow_MouseDown"
                                                                   
                       GlowBrush="{DynamicResource AccentColorBrush}"
                       EnableDWMDropShadow="False"

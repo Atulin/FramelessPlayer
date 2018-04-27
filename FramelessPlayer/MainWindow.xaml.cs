@@ -694,15 +694,19 @@ namespace FramelessPlayer
 
         private void MetroWindow_MouseMove(object sender, MouseEventArgs e)
         {
-            //if (Player.State == Meta.Vlc.Interop.Media.MediaState.Playing)
-            //{
-                Mouse.OverrideCursor = Cursors.Arrow;
+            Mouse.OverrideCursor = Cursors.Arrow;
 
-                mouseTimer.Stop();
-                mouseTimer.Start();
-            //}
+            mouseTimer.Stop();
+            mouseTimer.Start();
         }
 
+        // Handle window click
+        private void MetroWindow_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            Playlist_Flyout.IsOpen = false;
+            Settings_Flyout.IsOpen = false;
+            Tracks_Flyout.IsOpen = false;
+        }
 
 
 
