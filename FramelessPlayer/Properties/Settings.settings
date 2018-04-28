@@ -20,5 +20,14 @@
     <Setting Name="CompactProgressBarOpacity" Type="System.Double" Scope="User">
       <Value Profile="(Default)">0.8</Value>
     </Setting>
+    <Setting Name="TimerWindowTextColour" Type="System.Windows.Media.Color" Scope="User">
+      <Value Profile="(Default)">#00000000</Value>
+    </Setting>
+    <Setting Name="TimerWindowBackgroundColour" Type="System.Windows.Media.Color" Scope="User">
+      <Value Profile="(Default)">#00000000</Value>
+    </Setting>
+    <Setting Name="TimerWindowFontSize" Type="System.Double" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

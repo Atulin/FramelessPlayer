@@ -74,6 +74,9 @@ namespace FramelessPlayer
             get { return this.VideoTracks; }
         }
 
+        // Timer window
+        public TimerWindow timerWindow = new TimerWindow();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -132,6 +135,18 @@ namespace FramelessPlayer
             mouseTimer.Interval = TimeSpan.FromMilliseconds(500 /*Adjust the interval*/);
 
 
+            // Set timer window text colour
+            timerWindow.TimeTxt.Foreground = new SolidColorBrush(Properties.Settings.Default.TimerWindowTextColour);
+            TimerTextColorPicker.SelectedColor = Properties.Settings.Default.TimerWindowTextColour;
+
+            // Set timer window background colour
+            timerWindow.Background = new SolidColorBrush(Properties.Settings.Default.TimerWindowBackgroundColour);
+            TimerBgColorPicker.SelectedColor = Properties.Settings.Default.TimerWindowBackgroundColour;
+
+            // Set timer text size
+            timerWindow.TimeTxt.FontSize = Properties.Settings.Default.TimerWindowFontSize;
+            TimerWindowFontSizeSlider.Value = Properties.Settings.Default.TimerWindowFontSize;
+
             // Check if a file is being opened through shell extension and play is if so
             var args = Environment.GetCommandLineArgs();
 
@@ -164,6 +179,7 @@ namespace FramelessPlayer
 
                 // Save settings
                 Properties.Settings.Default.Save();
+                Properties.Settings.Default.Reload();
             }
             else
             {
@@ -261,6 +277,32 @@ namespace FramelessPlayer
             }
             catch{}
 
+        }
+
+        // Handle timer window text colour picker colour change
+        private void TimerTextColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        {
+            Color newColor = TimerTextColorPicker.SelectedColor ?? default(Color);
+            timerWindow.TimeTxt.Foreground = new SolidColorBrush(newColor);
+
+            Properties.Settings.Default.TimerWindowTextColour = newColor;
+        }
+
+        // Handle timer window background colour picker change
+        private void TimerBgColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        {
+            Color newColor = TimerBgColorPicker.SelectedColor ?? default(Color);
+            timerWindow.Background = new SolidColorBrush(newColor);
+
+            Properties.Settings.Default.TimerWindowBackgroundColour = newColor;
+        }
+
+        // Handle timer window font size
+        private void TimerWindowFontSizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            timerWindow.TimeTxt.FontSize = TimerWindowFontSizeSlider.Value;
+
+            Properties.Settings.Default.TimerWindowFontSize = TimerWindowFontSizeSlider.Value;
         }
 
         #region --- Cleanup ---
@@ -397,6 +439,26 @@ namespace FramelessPlayer
             Playlist_Flyout.IsOpen = !Playlist_Flyout.IsOpen;
         }
 
+
+        // Handle timer popout
+        public bool isTimerOpen = false;
+        private void btnTimer_Click(object sender, RoutedEventArgs e)
+        {
+            if (isTimerOpen)
+            {
+                timerWindow.Hide();
+                isTimerOpen = false;
+            }
+            else
+            {
+                timerWindow.Show();
+                isTimerOpen = true;
+
+
+            }
+        }
+
+
         #endregion --- Events ---
 
         // Handle scrubbing
@@ -472,6 +534,9 @@ namespace FramelessPlayer
             string currentTime = Player.Time.ToString(@"hh\:mm\:ss");
             string totalTime = Player.Length.ToString(@"hh\:mm\:ss");
 
+            // Set time in timer window
+            timerWindow.TimeTxt.Text = Player.Time.ToString(@"hh\:mm\:ss");
+
             VideoTime.Text = currentTime + "/" + totalTime;
         }
 
@@ -502,6 +567,7 @@ namespace FramelessPlayer
         {
             Properties.Settings.Default.Volume = VolumeSlider.Value;
             Properties.Settings.Default.Save();
+            Properties.Settings.Default.Reload();
 
             VolumeOverlay_bar.Value = Player.Volume;
             VolumeOverlay_txt.Text = Player.Volume.ToString();
@@ -549,8 +615,12 @@ namespace FramelessPlayer
         // Handle app closed
         private void MetroWindow_Closed(object sender, EventArgs e)
         {
+            // Close timer
+            timerWindow.Close();
+
             // Save all settings changes
             Properties.Settings.Default.Save();
+            Properties.Settings.Default.Reload();
         }
 
         // Handle keyboard key presses
@@ -704,7 +774,6 @@ namespace FramelessPlayer
         private void MetroWindow_MouseDown(object sender, MouseButtonEventArgs e)
         {
             Playlist_Flyout.IsOpen = false;
-            Settings_Flyout.IsOpen = false;
             Tracks_Flyout.IsOpen = false;
         }
 
@@ -738,7 +807,6 @@ namespace FramelessPlayer
             VolumeOverlay_txt.Text = Player.Volume.ToString();
 
             Properties.Settings.Default.Volume = VolumeSlider.Value;
-            Properties.Settings.Default.Save();
         }
 
     }
